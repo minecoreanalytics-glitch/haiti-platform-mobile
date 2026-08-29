@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native"
 import { SymbolView } from "expo-symbols"
+import { getZone, subscribeZone } from "@/lib/zone"
 import {
   API_URL,
   CARD,
@@ -152,8 +153,12 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
   const load = useCallback(async (f: string) => {
     try {
       setError(null)
-      const q = f === "tout" ? "" : `?f=${f}`
-      const res = await fetch(`${API_URL}/api/feed${q}`)
+      const params = new URLSearchParams()
+      if (f !== "tout") params.set("f", f)
+      const zone = getZone()
+      if (zone) params.set("zone", zone.id)
+      const qs = params.toString()
+      const res = await fetch(`${API_URL}/api/feed${qs ? `?${qs}` : ""}`)
       setPosts(await res.json())
     } catch {
       setError("Sèvè a pa reponn. Tcheke koneksyon an.")
@@ -163,6 +168,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
 
   useEffect(() => {
     load(filter)
+    return subscribeZone(() => load(filter))
   }, [filter, load])
 
   const onRefresh = useCallback(async () => {
