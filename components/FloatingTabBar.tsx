@@ -1,8 +1,9 @@
-import { Animated, Pressable, StyleSheet, View } from "react-native"
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurView } from "expo-blur"
 import { SymbolView } from "expo-symbols"
 import { barShrink } from "@/lib/navbar"
+import { t, useLang, type StringKey } from "@/lib/i18n"
 
 type TabBarProps = {
   state: { index: number; routes: { key: string; name: string }[] }
@@ -10,24 +11,25 @@ type TabBarProps = {
   navigation: any
 }
 
-const ICONS: Record<string, string> = {
-  index: "house.fill",
-  kat: "map.fill",
-  poste: "plus.circle.fill",
-  kandida: "person.2.fill",
-  pwoje: "banknote.fill",
+const TABS: Record<string, { icon: string; label: StringKey }> = {
+  index: { icon: "house.fill", label: "tabFil" },
+  kat: { icon: "map.fill", label: "tabKat" },
+  poste: { icon: "plus.circle.fill", label: "tabPoste" },
+  kandida: { icon: "person.2.fill", label: "tabKandida" },
+  pwoje: { icon: "banknote.fill", label: "tabPwoje" },
 }
 
 export function FloatingTabBar({ state, navigation }: TabBarProps) {
+  useLang()
   const insets = useSafeAreaInsets()
 
   const scale = barShrink.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.86],
+    outputRange: [1, 0.88],
   })
   const translateY = barShrink.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 14],
+    outputRange: [0, 16],
   })
   const opacity = barShrink.interpolate({
     inputRange: [0, 1],
@@ -50,7 +52,7 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
         <View style={s.overlay} />
         {state.routes.map((route, i) => {
           const focused = state.index === i
-          const icon = ICONS[route.name] ?? "circle"
+          const tab = TABS[route.name] ?? { icon: "circle", label: "tabFil" }
           return (
             <Pressable
               key={route.key}
@@ -65,13 +67,16 @@ export function FloatingTabBar({ state, navigation }: TabBarProps) {
                 }
               }}
               style={[s.item, focused && s.itemActive]}
-              hitSlop={6}
+              hitSlop={4}
             >
               <SymbolView
-                name={icon as never}
-                size={route.name === "poste" ? 27 : 23}
+                name={tab.icon as never}
+                size={route.name === "poste" ? 25 : 22}
                 tintColor={focused ? "#111418" : "#7C7C82"}
               />
+              <Text style={[s.label, focused && s.labelActive]} numberOfLines={1}>
+                {t(tab.label)}
+              </Text>
             </Pressable>
           )
         })}
@@ -90,10 +95,11 @@ const s = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    alignSelf: "stretch",
+    marginHorizontal: 12,
     borderRadius: 999,
     overflow: "hidden",
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 8,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: "rgba(0,0,0,0.10)",
@@ -107,13 +113,16 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.62)",
   },
   item: {
-    width: 52,
-    height: 46,
+    flex: 1,
+    height: 50,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
+    gap: 3,
   },
   itemActive: {
     backgroundColor: "rgba(0,0,0,0.06)",
   },
+  label: { fontSize: 10, fontWeight: "600", color: "#7C7C82" },
+  labelActive: { color: "#111418", fontWeight: "800" },
 })
