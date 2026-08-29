@@ -1,3 +1,4 @@
+import { L_BG, L_CARD, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
 import { useState } from "react"
 import {
   ActivityIndicator,
@@ -70,7 +71,7 @@ export default function PosteScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: L_BG }} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -92,9 +93,9 @@ export default function PosteScreen() {
               <SymbolView
                 name={ty.icon as never}
                 size={20}
-                tintColor={type === ty.key ? PAPER : MUTED}
+                tintColor={type === ty.key ? L_TXT : L_SUB}
               />
-              <Text style={[s.typeTxt, type === ty.key && { color: PAPER }]}>
+              <Text style={[s.typeTxt, type === ty.key && { color: L_TXT }]}>
                 {t(ty.labelKey)}
               </Text>
             </Pressable>
@@ -105,7 +106,7 @@ export default function PosteScreen() {
         <TextInput
           style={s.name}
           placeholder={t("yourNameOptional")}
-          placeholderTextColor="#55627A"
+          placeholderTextColor="#A0A0A0"
           value={name}
           onChangeText={setName}
           maxLength={60}
@@ -115,7 +116,7 @@ export default function PosteScreen() {
           placeholder={
             type === "kesyon" ? t("questionPlaceholder") : t("problemPlaceholder")
           }
-          placeholderTextColor="#55627A"
+          placeholderTextColor="#A0A0A0"
           value={body}
           onChangeText={(t) => {
             setBody(t)
@@ -150,8 +151,8 @@ export default function PosteScreen() {
 
 const s = StyleSheet.create({
   head: { paddingHorizontal: 16, paddingTop: 8 },
-  title: { color: PAPER, fontWeight: "800", fontSize: 20 },
-  sub: { color: MUTED, fontSize: 12, marginTop: 2 },
+  title: { color: L_TXT, fontWeight: "800", fontSize: 20 },
+  sub: { color: L_SUB, fontSize: 12, marginTop: 2 },
   types: { flexDirection: "row", gap: 10, paddingHorizontal: 16, marginTop: 14 },
   type: {
     flex: 1,
@@ -159,23 +160,23 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: LINE,
+    borderColor: L_LINE,
     paddingVertical: 12,
   },
-  typeActive: { borderColor: PAPER },
-  typeTxt: { color: MUTED, fontWeight: "700", fontSize: 14 },
-  hint: { color: "#5E6C86", fontSize: 11, paddingHorizontal: 16, marginTop: 8 },
+  typeActive: { borderColor: L_TXT },
+  typeTxt: { color: L_SUB, fontWeight: "700", fontSize: 14 },
+  hint: { color: "#8E8E8E", fontSize: 11, paddingHorizontal: 16, marginTop: 8 },
   name: {
     marginHorizontal: 16,
     marginTop: 12,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
-    color: PAPER,
+    borderColor: L_LINE,
+    color: L_TXT,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -184,18 +185,18 @@ const s = StyleSheet.create({
     flex: 1,
     margin: 16,
     marginBottom: 8,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
-    color: PAPER,
+    borderColor: L_LINE,
+    color: L_TXT,
     padding: 14,
     fontSize: 15,
     textAlignVertical: "top",
   },
   footer: { paddingHorizontal: 16, paddingBottom: 10 },
   error: { color: "#F87171", fontSize: 12, marginBottom: 6 },
-  count: { color: "#55627A", fontSize: 11, textAlign: "right", marginBottom: 8 },
+  count: { color: "#8E8E8E", fontSize: 11, textAlign: "right", marginBottom: 8 },
   send: {
     backgroundColor: FLAG_RED,
     borderRadius: 12,
@@ -203,5 +204,5 @@ const s = StyleSheet.create({
     paddingVertical: 13,
   },
   sendTxt: { color: "#fff", fontWeight: "800", fontSize: 15 },
-  note: { color: "#55627A", fontSize: 10, textAlign: "center", marginTop: 8 },
+  note: { color: "#8E8E8E", fontSize: 10, textAlign: "center", marginTop: 8 },
 })

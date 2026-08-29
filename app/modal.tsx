@@ -1,3 +1,4 @@
+import { L_BG, L_CARD, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
 import { useEffect, useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Stack, useRouter } from "expo-router"
@@ -14,26 +15,26 @@ export default function PwofilScreen() {
   useEffect(() => subscribeZone(() => setZoneState(getZone())), [])
 
   return (
-    <View style={{ flex: 1, backgroundColor: INK, padding: 20 }}>
+    <View style={{ flex: 1, backgroundColor: L_BG, padding: 20 }}>
       <Stack.Screen
         options={{
           title: t("me"),
-          headerStyle: { backgroundColor: INK },
-          headerTitleStyle: { color: PAPER },
-          headerTintColor: PAPER,
+          headerStyle: { backgroundColor: L_BG },
+          headerTitleStyle: { color: L_TXT },
+          headerTintColor: "#111418",
         }}
       />
 
       <View style={s.card}>
         <View style={s.avatar}>
-          <SymbolView name="person.fill" size={30} tintColor="#9DB4E8" />
+          <SymbolView name="person.fill" size={30} tintColor="#41537B" />
         </View>
         <Text style={s.name}>{t("visitor")}</Text>
         <Text style={s.meta}>{t("visitorNote")}</Text>
       </View>
 
       <View style={s.row}>
-        <SymbolView name="globe" size={20} tintColor={MUTED} />
+        <SymbolView name="globe" size={20} tintColor={L_SUB} />
         <Text style={s.rowTxt}>{t("language")}</Text>
         <View style={s.langSwitch}>
           {(["fr", "ht"] as const).map((l) => (
@@ -43,7 +44,7 @@ export default function PwofilScreen() {
               style={[s.langBtn, getLang() === l && s.langBtnActive]}
             >
               <Text
-                style={[s.langTxt, getLang() === l && { color: INK }]}
+                style={[s.langTxt, getLang() === l && { color: "#fff" }]}
               >
                 {l === "fr" ? "Français" : "Kreyòl"}
               </Text>
@@ -59,7 +60,7 @@ export default function PwofilScreen() {
       </View>
       {zone && (
         <Pressable style={s.row} onPress={() => setZone(null)}>
-          <SymbolView name="xmark.circle" size={20} tintColor={MUTED} />
+          <SymbolView name="xmark.circle" size={20} tintColor={L_SUB} />
           <Text style={s.rowTxt}>{t("backToAllHaiti")}</Text>
         </Pressable>
       )}
@@ -70,7 +71,7 @@ export default function PwofilScreen() {
           router.push("/kat")
         }}
       >
-        <SymbolView name="map" size={20} tintColor={MUTED} />
+        <SymbolView name="map" size={20} tintColor={L_SUB} />
         <Text style={s.rowTxt}>{t("changeZoneOnMap")}</Text>
       </Pressable>
 
@@ -82,10 +83,10 @@ export default function PwofilScreen() {
 const s = StyleSheet.create({
   card: {
     alignItems: "center",
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     padding: 22,
     marginBottom: 16,
   },
@@ -93,36 +94,36 @@ const s = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: "#233457",
+    backgroundColor: "#E8EDF6",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
   },
-  name: { color: PAPER, fontWeight: "800", fontSize: 18 },
-  meta: { color: MUTED, fontSize: 12, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  name: { color: L_TXT, fontWeight: "800", fontSize: 18 },
+  meta: { color: L_SUB, fontSize: 12, textAlign: "center", marginTop: 6, lineHeight: 18 },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 10,
   },
-  rowTxt: { color: PAPER, fontSize: 14, fontWeight: "600" },
-  rowVal: { color: MUTED, fontSize: 13, marginLeft: "auto" },
+  rowTxt: { color: L_TXT, fontSize: 14, fontWeight: "600" },
+  rowVal: { color: L_SUB, fontSize: 13, marginLeft: "auto" },
   langSwitch: {
     flexDirection: "row",
     marginLeft: "auto",
-    backgroundColor: "#1B2740",
+    backgroundColor: "#EFEFEF",
     borderRadius: 999,
     padding: 3,
   },
   langBtn: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
-  langBtnActive: { backgroundColor: PAPER },
-  langTxt: { color: MUTED, fontSize: 12, fontWeight: "700" },
-  version: { color: "#55627A", fontSize: 11, textAlign: "center", marginTop: "auto" },
+  langBtnActive: { backgroundColor: L_TXT },
+  langTxt: { color: L_SUB, fontSize: 12, fontWeight: "700" },
+  version: { color: "#8E8E8E", fontSize: 11, textAlign: "center", marginTop: "auto" },
 })

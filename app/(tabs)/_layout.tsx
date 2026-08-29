@@ -2,7 +2,6 @@ import { SymbolView } from "expo-symbols"
 import { Tabs } from "expo-router"
 import type { ColorValue } from "react-native"
 import { t, useLang } from "@/lib/i18n"
-import { INK, LINE, MUTED, PAPER } from "@/constants/theme"
 
 function icon(name: string) {
   return ({ color }: { color: ColorValue }) => (
@@ -16,13 +15,13 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: PAPER,
-        tabBarInactiveTintColor: MUTED,
+        tabBarActiveTintColor: "#111418",
+        tabBarInactiveTintColor: "#8E8E8E",
         tabBarStyle: {
-          backgroundColor: "#060608",
-          borderTopColor: "#1B1F26",
+          backgroundColor: "#FFFFFF",
+          borderTopColor: "#DBDBDB",
         },
-        sceneStyle: { backgroundColor: "#060608" },
+        sceneStyle: { backgroundColor: "#FFFFFF" },
       }}
     >
       <Tabs.Screen

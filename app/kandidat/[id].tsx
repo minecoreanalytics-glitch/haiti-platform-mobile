@@ -1,3 +1,4 @@
+import { L_BG, L_CARD, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
 import { useEffect, useState } from "react"
 import {
   ActivityIndicator,
@@ -50,18 +51,18 @@ export default function KandidaDetail() {
   }, [id])
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: L_BG }} edges={["top"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={s.nav}>
         <Pressable onPress={() => router.back()} style={s.back}>
-          <SymbolView name="chevron.left" size={17} tintColor={PAPER} />
+          <SymbolView name="chevron.left" size={17} tintColor={L_TXT} />
         </Pressable>
         <Text style={s.navTitle}>{t("candidateProfile")}</Text>
         <View style={{ width: 32 }} />
       </View>
 
       {!d ? (
-        <ActivityIndicator color={PAPER} style={{ marginTop: 60 }} />
+        <ActivityIndicator color={L_SUB} style={{ marginTop: 60 }} />
       ) : (
         <FlatList
           data={d.posts}
@@ -75,7 +76,7 @@ export default function KandidaDetail() {
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <Text style={s.name}>{d.name}</Text>
-                <SymbolView name="checkmark.seal.fill" size={18} tintColor="#4C9AFF" />
+                <SymbolView name="checkmark.seal.fill" size={18} tintColor={VERIFIED} />
               </View>
               <Text style={s.meta}>
                 {d.party ? `${d.party} · ` : ""}
@@ -119,7 +120,7 @@ export default function KandidaDetail() {
                 </View>
               )}
               <Pressable style={s.ask}>
-                <SymbolView name="questionmark.bubble" size={17} tintColor={PAPER} />
+                <SymbolView name="questionmark.bubble" size={17} tintColor={L_TXT} />
                 <Text style={s.askTxt}>{t("askPublicQuestion")}</Text>
               </Pressable>
               <Text style={s.sectionTitle}>{t("activity")}</Text>
@@ -148,24 +149,24 @@ const s = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     alignItems: "center",
     justifyContent: "center",
   },
-  navTitle: { color: MUTED, fontSize: 13, fontWeight: "600" },
+  navTitle: { color: L_SUB, fontSize: 13, fontWeight: "600" },
   header: { alignItems: "center", paddingHorizontal: 16, paddingTop: 8 },
   avatar: {
     width: 84,
     height: 84,
     borderRadius: 42,
-    backgroundColor: "#233457",
+    backgroundColor: "#E8EDF6",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
   },
-  avatarTxt: { color: "#9DB4E8", fontWeight: "800", fontSize: 26 },
-  name: { color: PAPER, fontWeight: "800", fontSize: 20 },
-  meta: { color: MUTED, fontSize: 12, marginTop: 3, textAlign: "center" },
+  avatarTxt: { color: "#41537B", fontWeight: "800", fontSize: 26 },
+  name: { color: L_TXT, fontWeight: "800", fontSize: 20 },
+  meta: { color: L_SUB, fontSize: 12, marginTop: 3, textAlign: "center" },
   statsRow: {
     flexDirection: "row",
     gap: 12,
@@ -174,32 +175,32 @@ const s = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     alignItems: "center",
     paddingVertical: 10,
   },
-  statVal: { color: PAPER, fontWeight: "800", fontSize: 17 },
-  statLbl: { color: MUTED, fontSize: 10, marginTop: 2, letterSpacing: 1 },
+  statVal: { color: L_TXT, fontWeight: "800", fontSize: 17 },
+  statLbl: { color: L_SUB, fontSize: 10, marginTop: 2, letterSpacing: 1 },
   bio: {
     alignSelf: "stretch",
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     padding: 14,
     marginTop: 12,
   },
   bioTitle: {
-    color: MUTED,
+    color: L_SUB,
     fontSize: 10,
     letterSpacing: 1.4,
     textTransform: "uppercase",
     marginBottom: 6,
   },
-  bioTxt: { color: PAPER, fontSize: 13, lineHeight: 20 },
+  bioTxt: { color: L_TXT, fontSize: 13, lineHeight: 20 },
   ask: {
     alignSelf: "stretch",
     flexDirection: "row",
@@ -214,7 +215,7 @@ const s = StyleSheet.create({
   askTxt: { color: "#fff", fontWeight: "800", fontSize: 14 },
   sectionTitle: {
     alignSelf: "flex-start",
-    color: PAPER,
+    color: L_TXT,
     fontWeight: "800",
     fontSize: 16,
     marginTop: 20,

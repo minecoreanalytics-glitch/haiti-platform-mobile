@@ -1,3 +1,4 @@
+import { L_BG, L_CARD, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
 import { useCallback, useEffect, useState } from "react"
 import {
   ActivityIndicator,
@@ -48,13 +49,13 @@ export default function KandidaScreen() {
   useEffect(load, [load])
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: L_BG }} edges={["top"]}>
       <View style={s.head}>
         <Text style={s.title}>{t("candidatesTitle")}</Text>
         <Text style={s.sub}>{t("candidatesSub")}</Text>
       </View>
       {list === null ? (
-        <ActivityIndicator color={PAPER} style={{ marginTop: 60 }} />
+        <ActivityIndicator color={L_SUB} style={{ marginTop: 60 }} />
       ) : (
         <FlatList
           data={list}
@@ -81,7 +82,7 @@ export default function KandidaScreen() {
                   <SymbolView
                     name="checkmark.seal.fill"
                     size={15}
-                    tintColor="#4C9AFF"
+                    tintColor={VERIFIED}
                   />
                 </View>
                 <Text style={s.meta} numberOfLines={1}>
@@ -93,7 +94,7 @@ export default function KandidaScreen() {
                   {item.projects} {t("chipProjects").toLowerCase()}
                 </Text>
               </View>
-              <SymbolView name="chevron.right" size={14} tintColor={MUTED} />
+              <SymbolView name="chevron.right" size={14} tintColor={L_SUB} />
             </Pressable>
           )}
         />
@@ -104,28 +105,28 @@ export default function KandidaScreen() {
 
 const s = StyleSheet.create({
   head: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  title: { color: PAPER, fontWeight: "800", fontSize: 20 },
-  sub: { color: MUTED, fontSize: 12, marginTop: 2 },
+  title: { color: L_TXT, fontWeight: "800", fontSize: 20 },
+  sub: { color: L_SUB, fontSize: 12, marginTop: 2 },
   card: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     padding: 14,
   },
   avatar: {
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: "#233457",
+    backgroundColor: "#E8EDF6",
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarTxt: { color: "#9DB4E8", fontWeight: "800", fontSize: 15 },
-  name: { color: PAPER, fontWeight: "700", fontSize: 15, flexShrink: 1 },
-  meta: { color: MUTED, fontSize: 12, marginTop: 2 },
-  meta2: { color: "#5E6C86", fontSize: 11, marginTop: 2 },
+  avatarTxt: { color: "#41537B", fontWeight: "800", fontSize: 15 },
+  name: { color: L_TXT, fontWeight: "700", fontSize: 15, flexShrink: 1 },
+  meta: { color: L_SUB, fontSize: 12, marginTop: 2 },
+  meta2: { color: "#8E8E8E", fontSize: 11, marginTop: 2 },
 })

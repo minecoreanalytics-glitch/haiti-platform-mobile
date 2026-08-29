@@ -6,8 +6,7 @@ import { SymbolView } from "expo-symbols"
 import { FeedList } from "@/components/FeedList"
 import { getZone, setZone, subscribeZone } from "@/lib/zone"
 import { t, useLang } from "@/lib/i18n"
-import { MUTED, PAPER } from "@/constants/theme"
-import { FEED_BG } from "@/components/FeedList"
+import { L_BG, L_SUB, L_TXT } from "@/constants/theme"
 
 export default function FilScreen() {
   useLang()
@@ -17,22 +16,22 @@ export default function FilScreen() {
   useEffect(() => subscribeZone(() => setZoneState(getZone())), [])
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: FEED_BG }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: L_BG }} edges={["top"]}>
       <View style={s.topbar}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text style={{ fontSize: 16 }}>🇭🇹</Text>
-            <Text style={s.zone}>{zone?.name ?? t("allHaiti")}</Text>
-          </View>
+        <Pressable onPress={() => router.push("/poste")} hitSlop={8}>
+          <SymbolView name="plus.square" size={25} tintColor={L_TXT} />
+        </Pressable>
+        <View style={s.center}>
+          <Text style={{ fontSize: 15 }}>🇭🇹</Text>
+          <Text style={s.zone}>{zone?.name ?? t("allHaiti")}</Text>
           {zone && (
-            <Pressable style={s.reset} onPress={() => setZone(null)}>
-              <SymbolView name="xmark" size={11} tintColor={MUTED} />
-              <Text style={s.resetTxt}>{t("allHaiti")}</Text>
+            <Pressable onPress={() => setZone(null)} hitSlop={8} style={s.reset}>
+              <SymbolView name="xmark" size={10} tintColor={L_SUB} />
             </Pressable>
           )}
         </View>
-        <Pressable onPress={() => router.push("/modal")}>
-          <SymbolView name="person.circle" size={27} tintColor={MUTED} />
+        <Pressable onPress={() => router.push("/modal")} hitSlop={8}>
+          <SymbolView name="person.circle" size={26} tintColor={L_TXT} />
         </Pressable>
       </View>
       <FeedList />
@@ -45,18 +44,15 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
-  zone: { color: PAPER, fontWeight: "800", fontSize: 16 },
+  center: { flexDirection: "row", alignItems: "center", gap: 6 },
+  zone: { color: L_TXT, fontWeight: "800", fontSize: 17 },
   reset: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "#16213A",
+    backgroundColor: "#EFEFEF",
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    padding: 5,
+    marginLeft: 2,
   },
-  resetTxt: { color: MUTED, fontSize: 11, fontWeight: "600" },
 })

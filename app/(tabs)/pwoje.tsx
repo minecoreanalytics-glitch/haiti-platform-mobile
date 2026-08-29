@@ -1,3 +1,4 @@
+import { L_BG, L_CARD, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
 import { useCallback, useState } from "react"
 import {
   ActivityIndicator,
@@ -35,9 +36,9 @@ function ProjectCard({ post }: { post: FeedPost }) {
           }
         >
           <Text style={s.meta}>
-            {t("by")} <Text style={{ color: PAPER }}>{post.author}</Text>
+            {t("by")} <Text style={{ color: L_TXT }}>{post.author}</Text>
           </Text>
-          <SymbolView name="checkmark.seal.fill" size={13} tintColor="#4C9AFF" />
+          <SymbolView name="checkmark.seal.fill" size={13} tintColor={VERIFIED} />
           <Text style={s.meta}>· {post.commune}</Text>
         </Pressable>
 
@@ -90,7 +91,7 @@ export default function PwojeScreen() {
   const total = (posts ?? []).reduce((s, p) => s + (p.project?.raisedHTG ?? 0), 0)
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: L_BG }} edges={["top"]}>
       <View style={s.head}>
         <Text style={s.headTitle}>{t("projectsTitle")}</Text>
         <Text style={s.sub}>{t("projectsSub")}</Text>
@@ -104,7 +105,7 @@ export default function PwojeScreen() {
         )}
       </View>
       {posts === null ? (
-        <ActivityIndicator color={PAPER} style={{ marginTop: 60 }} />
+        <ActivityIndicator color={L_SUB} style={{ marginTop: 60 }} />
       ) : (
         <FlatList
           data={posts}
@@ -124,25 +125,25 @@ export default function PwojeScreen() {
 
 const s = StyleSheet.create({
   head: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6 },
-  headTitle: { color: PAPER, fontWeight: "800", fontSize: 20 },
-  sub: { color: MUTED, fontSize: 12, marginTop: 2 },
+  headTitle: { color: L_TXT, fontWeight: "800", fontSize: 20 },
+  sub: { color: L_SUB, fontSize: 12, marginTop: 2 },
   totalRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 10 },
   total: { color: GREEN, fontWeight: "800", fontSize: 15 },
   card: {
-    backgroundColor: CARD,
+    backgroundColor: L_CARD,
     borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: L_LINE,
     overflow: "hidden",
   },
   photo: { width: "100%", aspectRatio: 16 / 9 },
-  title: { color: PAPER, fontWeight: "800", fontSize: 16, lineHeight: 22 },
+  title: { color: L_TXT, fontWeight: "800", fontSize: 16, lineHeight: 22 },
   byline: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 5 },
-  meta: { color: MUTED, fontSize: 12 },
+  meta: { color: L_SUB, fontSize: 12 },
   track: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#1B2740",
+    backgroundColor: "#EFEFEF",
     marginTop: 14,
     overflow: "hidden",
   },
@@ -153,10 +154,10 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-  raised: { color: PAPER, fontWeight: "800", fontSize: 18 },
-  htg: { color: MUTED, fontWeight: "400", fontSize: 12 },
+  raised: { color: L_TXT, fontWeight: "800", fontSize: 18 },
+  htg: { color: L_SUB, fontWeight: "400", fontSize: 12 },
   pct: { color: GREEN, fontWeight: "800", fontSize: 16 },
-  goal: { color: MUTED, fontSize: 12, marginTop: 3 },
+  goal: { color: L_SUB, fontSize: 12, marginTop: 3 },
   cta: {
     backgroundColor: GREEN,
     borderRadius: 12,

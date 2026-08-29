@@ -7,3 +7,11 @@ export const MUTED = "#8B98AE"
 export const FLAG_RED = "#E8283F"
 export const GREEN = "#10B981"
 export const API_URL = "http://localhost:3600"
+
+// Thème clair (IG) — le Fil et les écrans standards
+export const L_BG = "#FFFFFF"
+export const L_TXT = "#111418"
+export const L_SUB = "#737373"
+export const L_LINE = "#DBDBDB"
+export const L_CARD = "#FAFAFA"
+export const VERIFIED = "#3897F0"
