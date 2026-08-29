@@ -19,14 +19,10 @@ export default function FilScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
       <View style={s.topbar}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Pressable
-            onPress={() => router.push("/kat")}
-            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-          >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Text style={{ fontSize: 16 }}>🇭🇹</Text>
             <Text style={s.zone}>{zone?.name ?? t("allHaiti")}</Text>
-            <SymbolView name="chevron.down" size={13} tintColor={MUTED} />
-          </Pressable>
+          </View>
           {zone && (
             <Pressable style={s.reset} onPress={() => setZone(null)}>
               <SymbolView name="xmark" size={11} tintColor={MUTED} />
