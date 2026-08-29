@@ -10,9 +10,12 @@ import { useRouter } from "expo-router"
 import { LinearGradient } from "expo-linear-gradient"
 import { SymbolView } from "expo-symbols"
 import { t, useLang } from "@/lib/i18n"
-import { API_URL, L_LINE, L_SUB, L_TXT } from "@/constants/theme"
+import { API_URL, L_LINE, L_TXT } from "@/constants/theme"
 
-type Kandida = { id: string; name: string; party: string | null }
+const FRESH_MS = 24 * 3600_000
+
+type Kandida = { id: string; name: string }
+type FeedLite = { candidateId?: string | null; createdAt: string }
 
 function initials(name: string) {
   return name
@@ -23,16 +26,59 @@ function initials(name: string) {
     .toUpperCase()
 }
 
+function Ring({
+  fresh,
+  children,
+}: {
+  fresh: boolean
+  children: React.ReactNode
+}) {
+  if (fresh) {
+    return (
+      <LinearGradient
+        colors={["#E8283F", "#F77737", "#FCAF45"]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 0 }}
+        style={s.ring}
+      >
+        <View style={s.inner}>{children}</View>
+      </LinearGradient>
+    )
+  }
+  return (
+    <View style={[s.ring, s.ringSeen]}>
+      <View style={s.inner}>{children}</View>
+    </View>
+  )
+}
+
 export function StoriesRow() {
   useLang()
   const router = useRouter()
-  const [list, setList] = useState<Kandida[]>([])
+  const [candidates, setCandidates] = useState<Kandida[]>([])
+  const [freshIds, setFreshIds] = useState<Set<string>>(new Set())
+  const [anyFresh, setAnyFresh] = useState(false)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/kandida`)
-      .then((r) => r.json())
-      .then(setList)
-      .catch(() => setList([]))
+    Promise.all([
+      fetch(`${API_URL}/api/kandida`).then((r) => r.json()),
+      fetch(`${API_URL}/api/feed`).then((r) => r.json()),
+    ])
+      .then(([kands, feed]: [Kandida[], FeedLite[]]) => {
+        const fresh = feed.filter(
+          (p) => Date.now() - new Date(p.createdAt).getTime() < FRESH_MS
+        )
+        setAnyFresh(fresh.length > 0)
+        setFreshIds(
+          new Set(
+            fresh
+              .map((p) => p.candidateId)
+              .filter((x): x is string => Boolean(x))
+          )
+        )
+        setCandidates(kands)
+      })
+      .catch(() => null)
   }, [])
 
   return (
@@ -56,28 +102,37 @@ export function StoriesRow() {
         </Text>
       </Pressable>
 
-      {list.map((k) => (
-        <Pressable
-          key={k.id}
-          style={s.item}
-          onPress={() => router.push(`/kandidat/${k.id}`)}
-        >
-          <LinearGradient
-            colors={["#E8283F", "#F77737", "#FCAF45"]}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
-            style={s.ring}
+      <Pressable
+        style={s.item}
+        onPress={() => anyFresh && router.push("/story/ayiti")}
+      >
+        <Ring fresh={anyFresh}>
+          <Text style={{ fontSize: 26 }}>🇭🇹</Text>
+        </Ring>
+        <Text style={s.label} numberOfLines={1}>
+          {t("allHaiti")}
+        </Text>
+      </Pressable>
+
+      {candidates.map((k) => {
+        const fresh = freshIds.has(k.id)
+        return (
+          <Pressable
+            key={k.id}
+            style={s.item}
+            onPress={() =>
+              router.push(fresh ? `/story/${k.id}` : `/kandidat/${k.id}`)
+            }
           >
-            <View style={s.inner}>
+            <Ring fresh={fresh}>
               <Text style={s.initials}>{initials(k.name)}</Text>
-            </View>
-          </LinearGradient>
-          <Text style={s.label} numberOfLines={1}>
-            {k.name.split(" ")[0].toLowerCase()}_
-            {k.name.split(" ").slice(-1)[0].toLowerCase()}
-          </Text>
-        </Pressable>
-      ))}
+            </Ring>
+            <Text style={s.label} numberOfLines={1}>
+              {k.name.split(" ")[0]}
+            </Text>
+          </Pressable>
+        )
+      })}
     </ScrollView>
   )
 }
@@ -120,6 +175,10 @@ const s = StyleSheet.create({
     borderRadius: 34,
     alignItems: "center",
     justifyContent: "center",
+  },
+  ringSeen: {
+    borderWidth: 1.5,
+    borderColor: "#C7C7CC",
   },
   inner: {
     width: 60,
