@@ -176,29 +176,6 @@ export default function StoryScreen() {
               )}
             </View>
 
-            {post.project && (
-              <View style={s.projectWrap}>
-                <View style={s.track}>
-                  <View
-                    style={[
-                      s.fill,
-                      {
-                        width: `${Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))}%`,
-                      },
-                    ]}
-                  />
-                </View>
-                <View style={s.projRow}>
-                  <Text style={s.projTxt}>
-                    {htg(post.project.raisedHTG)} /{" "}
-                    {htg(post.project.goalHTG)} HTG
-                  </Text>
-                  <Pressable style={s.give}>
-                    <Text style={s.giveTxt}>{t("give")}</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
           </View>
 
           <Pressable style={s.tapLeft} onPress={goPrev} />

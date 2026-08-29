@@ -25,12 +25,12 @@ const STRINGS = {
   tabKat: { fr: "Carte", ht: "Kat" },
   tabPoste: { fr: "Publier", ht: "Poste" },
   tabKandida: { fr: "Candidats", ht: "Kandida" },
-  tabPwoje: { fr: "Projets", ht: "Pwojè" },
+  tabPwoje: { fr: "Financement", ht: "Finansman" },
 
   // Fil
   allHaiti: { fr: "Tout Haïti", ht: "Tout Ayiti" },
   chipAll: { fr: "Tout", ht: "Tout" },
-  chipProjects: { fr: "Projets", ht: "Pwojè" },
+  chipProjects: { fr: "Candidats", ht: "Kandida" },
   chipCandidates: { fr: "Candidats", ht: "Kandida" },
   chipCitizens: { fr: "Citoyens", ht: "Sitwayen" },
   emptyFeed: { fr: "Rien à afficher pour le moment.", ht: "Poko gen anyen la a." },
@@ -112,6 +112,24 @@ const STRINGS = {
   onlyCandidatesNote: {
     fr: "Seuls les candidats vérifiés peuvent créer des projets, via la plateforme web.",
     ht: "Sèl kandida verifye ka kreye pwojè, sou platfòm wèb la.",
+  },
+
+  // Financement de campagne
+  fundingTitle: { fr: "Financement", ht: "Finansman" },
+  fundingSub: {
+    fr: "Le budget de campagne des candidats, rubrique par rubrique, avec les dépenses justifiées.",
+    ht: "Bidjè kanpay kandida yo, ribrik pa ribrik, ak depans ki gen prèv.",
+  },
+  budgetLines: { fr: "Rubriques du budget", ht: "Ribrik bidjè a" },
+  contributors: { fr: "contributeurs", ht: "kontribitè" },
+  averageGift: { fr: "don moyen", ht: "don mwayen" },
+  largestGift: { fr: "plus gros don", ht: "pi gwo don" },
+  diaspora: { fr: "diaspora", ht: "dyaspora" },
+  spent: { fr: "dépensés", ht: "depanse" },
+  proofs: { fr: "justificatifs", ht: "prèv" },
+  noBudgets: {
+    fr: "Aucun budget de campagne publié.",
+    ht: "Pa gen bidjè kanpay pibliye.",
   },
 
   // Projets

@@ -70,12 +70,7 @@ export type FeedPost = {
   commune: string
   department: string
   images: string[]
-  project: {
-    title: string
-    goalHTG: number
-    raisedHTG: number
-    contributions: number
-  } | null
+  project?: null
 }
 
 function timeAgo(iso: string) {
@@ -138,9 +133,7 @@ export function Card({ post }: { post: FeedPost }) {
   // WhatsApp est le vrai réseau en Haïti : un signalement qui ne circule pas
   // ne met aucune pression. Le partage n'est pas décoratif, c'est la diffusion.
   const share = async () => {
-    const head = post.project
-      ? post.project.title
-      : `${t("shareIssueIntro")} · ${post.commune}`
+    const head = `${t("shareIssueIntro")} · ${post.commune}`
     const witnesses =
       count > 0 ? `\n${count} ${t("shareWitnesses")}.` : ""
     try {
@@ -260,28 +253,6 @@ export function Card({ post }: { post: FeedPost }) {
         </Pressable>
       </View>
 
-      {post.project && (
-        <View style={s.project}>
-          <Text style={s.projectTitle}>{post.project.title}</Text>
-          <View style={s.track}>
-            <View
-              style={[
-                s.fill,
-                {
-                  width: `${Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))}%`,
-                },
-              ]}
-            />
-          </View>
-          <Text style={s.projMeta}>
-            {t("declaredGoal")} : {htg(post.project.goalHTG)} HTG
-          </Text>
-          <View style={s.closedPill}>
-            <SymbolView name="lock.fill" size={11} tintColor="#8E8E8E" />
-            <Text style={s.closedTxt}>{t("fundingClosed")}</Text>
-          </View>
-        </View>
-      )}
     </View>
   )
 }
