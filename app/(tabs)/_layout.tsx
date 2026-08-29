@@ -19,10 +19,10 @@ export default function TabLayout() {
         tabBarActiveTintColor: PAPER,
         tabBarInactiveTintColor: MUTED,
         tabBarStyle: {
-          backgroundColor: INK,
-          borderTopColor: LINE,
+          backgroundColor: "#060608",
+          borderTopColor: "#1B1F26",
         },
-        sceneStyle: { backgroundColor: INK },
+        sceneStyle: { backgroundColor: "#060608" },
       }}
     >
       <Tabs.Screen

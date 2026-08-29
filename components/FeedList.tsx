@@ -13,15 +13,11 @@ import {
 import { SymbolView } from "expo-symbols"
 import { getZone, subscribeZone } from "@/lib/zone"
 import { t, useLang } from "@/lib/i18n"
-import {
-  API_URL,
-  CARD,
-  GREEN,
-  INK,
-  LINE,
-  MUTED,
-  PAPER,
-} from "@/constants/theme"
+import { API_URL, FLAG_RED, GREEN, MUTED, PAPER } from "@/constants/theme"
+
+export const FEED_BG = "#060608"
+const HAIR = "#1B1F26"
+const SUBTLE = "#71767B"
 
 export type FeedPost = {
   id: string
@@ -62,6 +58,25 @@ function initials(name: string) {
     .toUpperCase()
 }
 
+function Action({
+  icon,
+  value,
+  tint,
+}: {
+  icon: string
+  value?: number | string
+  tint?: string
+}) {
+  return (
+    <View style={s.action}>
+      <SymbolView name={icon as never} size={17} tintColor={tint ?? SUBTLE} />
+      {value !== undefined && (
+        <Text style={[s.actionTxt, tint ? { color: tint } : null]}>{value}</Text>
+      )}
+    </View>
+  )
+}
+
 export function Card({ post }: { post: FeedPost }) {
   const router = useRouter()
   const isCandidate = post.kind !== "SITWAYEN"
@@ -72,77 +87,64 @@ export function Card({ post }: { post: FeedPost }) {
     if (post.candidateId) router.push(`/kandidat/${post.candidateId}`)
   }
   return (
-    <View style={s.card}>
-      <Pressable
-        style={s.row}
-        onPress={openProfile}
-        disabled={!post.candidateId}
-      >
-        <View style={[s.avatar, { backgroundColor: isCandidate ? "#233457" : "#1B2438" }]}>
+    <View style={s.cell}>
+      <Pressable onPress={openProfile} disabled={!post.candidateId}>
+        <View
+          style={[s.avatar, { backgroundColor: isCandidate ? "#1E2A44" : "#181C24" }]}
+        >
           <Text style={s.avatarTxt}>{initials(post.author)}</Text>
         </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Text style={s.author} numberOfLines={1}>
-              {post.author}
-            </Text>
-            {isCandidate && (
-              <SymbolView name="checkmark.seal.fill" size={15} tintColor="#4C9AFF" />
-            )}
-          </View>
-          <Text style={s.meta} numberOfLines={1}>
-            {post.party ? `${post.party} · ` : ""}
-            {post.commune} · {timeAgo(post.createdAt)}
-          </Text>
-        </View>
-        {post.kind === "PWOJE" && (
-          <View style={s.badgeGreen}>
-            <Text style={s.badgeGreenTxt}>{t("badgeProject")}</Text>
-          </View>
-        )}
       </Pressable>
 
-      <Text style={s.body}>{post.body}</Text>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Pressable
+          onPress={openProfile}
+          disabled={!post.candidateId}
+          style={s.headline}
+        >
+          <Text style={s.author} numberOfLines={1}>
+            {post.author}
+          </Text>
+          {isCandidate && (
+            <SymbolView name="checkmark.seal.fill" size={14} tintColor="#1D9BF0" />
+          )}
+          <Text style={s.meta} numberOfLines={1}>
+            {post.party ? ` ${post.party}` : ` ${post.commune}`} ·{" "}
+            {timeAgo(post.createdAt)}
+          </Text>
+        </Pressable>
 
-      {post.images.map((uri) => (
-        <Image key={uri} source={{ uri }} style={s.photo} />
-      ))}
+        <Text style={s.body}>{post.body}</Text>
 
-      {post.project && (
-        <View style={s.project}>
-          <Text style={s.projectTitle}>{post.project.title}</Text>
-          <View style={s.track}>
-            <View style={[s.fill, { width: `${pct}%` }]} />
+        {post.images.map((uri) => (
+          <Image key={uri} source={{ uri }} style={s.photo} />
+        ))}
+
+        {post.project && (
+          <View style={s.project}>
+            <View style={s.track}>
+              <View style={[s.fill, { width: `${pct}%` }]} />
+            </View>
+            <View style={s.projRow}>
+              <Text style={s.projNums} numberOfLines={1}>
+                <Text style={{ color: PAPER, fontWeight: "700" }}>
+                  {htg(post.project.raisedHTG)}
+                </Text>
+                <Text style={s.meta}> / {htg(post.project.goalHTG)} HTG</Text>
+                <Text style={{ color: GREEN, fontWeight: "700" }}> · {pct}%</Text>
+              </Text>
+              <Pressable style={s.givePill}>
+                <Text style={s.givePillTxt}>{t("give")}</Text>
+              </Pressable>
+            </View>
           </View>
-          <View style={s.rowBetween}>
-            <Text style={s.meta}>
-              <Text style={{ color: PAPER, fontWeight: "700" }}>
-                {htg(post.project.raisedHTG)} HTG
-              </Text>{" "}
-              / {htg(post.project.goalHTG)} · {pct}%
-            </Text>
-            <Text style={s.meta}>
-              {post.project.contributions} {t("contributions")}
-            </Text>
-          </View>
-          <Pressable style={s.moncash}>
-            <Text style={s.moncashTxt}>{t("give")}</Text>
-          </Pressable>
-        </View>
-      )}
+        )}
 
-      <View style={s.actions}>
-        <View style={s.action}>
-          <SymbolView name="heart" size={20} tintColor={MUTED} />
-          <Text style={s.actionTxt}>{post.likeCount}</Text>
-        </View>
-        <View style={s.action}>
-          <SymbolView name="bubble.right" size={19} tintColor={MUTED} />
-          <Text style={s.actionTxt}>{post.commentCount}</Text>
-        </View>
-        <View style={[s.action, { marginLeft: "auto" }]}>
-          <SymbolView name="square.and.arrow.up" size={19} tintColor={MUTED} />
-          <Text style={s.actionTxt}>WhatsApp</Text>
+        <View style={s.actions}>
+          <Action icon="bubble.left" value={post.commentCount} />
+          <Action icon="arrow.2.squarepath" value={12} />
+          <Action icon="heart" value={post.likeCount} />
+          <Action icon="square.and.arrow.up" />
         </View>
       </View>
     </View>
@@ -197,18 +199,19 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
   }, [filter, load])
 
   return (
-    <View style={{ flex: 1, backgroundColor: INK }}>
+    <View style={{ flex: 1, backgroundColor: FEED_BG }}>
       {!fixedFilter && (
-        <View style={s.chips}>
+        <View style={s.tabs}>
           {FILTERS.map((f) => (
             <Pressable
               key={f.key}
               onPress={() => setFilter(f.key)}
-              style={[s.chip, filter === f.key && s.chipActive]}
+              style={s.tab}
             >
-              <Text style={[s.chipTxt, filter === f.key && s.chipTxtActive]}>
+              <Text style={[s.tabTxt, filter === f.key && s.tabTxtActive]}>
                 {f.label}
               </Text>
+              <View style={[s.tabBar, filter === f.key && s.tabBarActive]} />
             </Pressable>
           ))}
         </View>
@@ -236,27 +239,29 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
 }
 
 const s = StyleSheet.create({
-  chips: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: "#16213A",
-  },
-  chipActive: { backgroundColor: PAPER },
-  chipTxt: { color: MUTED, fontSize: 13, fontWeight: "600" },
-  chipTxtActive: { color: INK },
-  card: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: LINE,
-  },
-  row: { flexDirection: "row", alignItems: "center", gap: 10 },
-  rowBetween: {
+  tabs: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: HAIR,
+  },
+  tab: { flex: 1, alignItems: "center" },
+  tabTxt: {
+    color: SUBTLE,
+    fontSize: 14,
+    fontWeight: "600",
+    paddingVertical: 12,
+  },
+  tabTxtActive: { color: PAPER, fontWeight: "800" },
+  tabBar: { height: 3, width: 44, borderRadius: 2, backgroundColor: "transparent" },
+  tabBarActive: { backgroundColor: FLAG_RED },
+  cell: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: HAIR,
   },
   avatar: {
     width: 40,
@@ -265,55 +270,50 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarTxt: { color: "#9DB4E8", fontWeight: "700", fontSize: 13 },
-  author: { color: PAPER, fontWeight: "700", fontSize: 14, flexShrink: 1 },
-  meta: { color: MUTED, fontSize: 12 },
-  badgeGreen: {
-    backgroundColor: "#0D2B22",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  badgeGreenTxt: { color: "#34D399", fontSize: 11, fontWeight: "700" },
-  body: { color: PAPER, fontSize: 15, lineHeight: 22, marginTop: 10 },
+  avatarTxt: { color: "#8FA6D8", fontWeight: "700", fontSize: 13 },
+  headline: { flexDirection: "row", alignItems: "center", gap: 4 },
+  author: { color: PAPER, fontWeight: "700", fontSize: 15, flexShrink: 1 },
+  meta: { color: SUBTLE, fontSize: 13, flexShrink: 1 },
+  body: { color: "#E7E9EA", fontSize: 15, lineHeight: 21, marginTop: 2 },
   photo: {
     width: "100%",
     aspectRatio: 4 / 3,
-    borderRadius: 16,
+    borderRadius: 14,
     marginTop: 10,
-    backgroundColor: CARD,
-  },
-  project: {
-    backgroundColor: CARD,
-    borderRadius: 16,
-    padding: 14,
-    marginTop: 10,
+    backgroundColor: "#101318",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: LINE,
+    borderColor: HAIR,
   },
-  projectTitle: { color: PAPER, fontWeight: "700", fontSize: 14 },
+  project: { marginTop: 10 },
   track: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#1B2740",
-    marginTop: 10,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#1C2733",
     overflow: "hidden",
   },
-  fill: { height: "100%", backgroundColor: GREEN, borderRadius: 3 },
-  moncash: {
-    backgroundColor: GREEN,
-    borderRadius: 12,
-    paddingVertical: 11,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  moncashTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  actions: {
+  fill: { height: "100%", backgroundColor: GREEN, borderRadius: 2 },
+  projRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 22,
-    marginTop: 12,
+    justifyContent: "space-between",
+    marginTop: 8,
+    gap: 10,
   },
-  action: { flexDirection: "row", alignItems: "center", gap: 6 },
-  actionTxt: { color: MUTED, fontSize: 13 },
+  projNums: { fontSize: 13, flexShrink: 1 },
+  givePill: {
+    backgroundColor: GREEN,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  givePillTxt: { color: "#04140D", fontWeight: "800", fontSize: 12 },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    marginBottom: 4,
+    paddingRight: 32,
+  },
+  action: { flexDirection: "row", alignItems: "center", gap: 5 },
+  actionTxt: { color: SUBTLE, fontSize: 12 },
 })

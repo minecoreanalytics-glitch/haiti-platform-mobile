@@ -6,7 +6,8 @@ import { SymbolView } from "expo-symbols"
 import { FeedList } from "@/components/FeedList"
 import { getZone, setZone, subscribeZone } from "@/lib/zone"
 import { t, useLang } from "@/lib/i18n"
-import { INK, MUTED, PAPER } from "@/constants/theme"
+import { MUTED, PAPER } from "@/constants/theme"
+import { FEED_BG } from "@/components/FeedList"
 
 export default function FilScreen() {
   useLang()
@@ -16,7 +17,7 @@ export default function FilScreen() {
   useEffect(() => subscribeZone(() => setZoneState(getZone())), [])
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: FEED_BG }} edges={["top"]}>
       <View style={s.topbar}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
