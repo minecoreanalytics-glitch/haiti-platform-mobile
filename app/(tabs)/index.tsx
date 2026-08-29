@@ -27,7 +27,9 @@ export default function FilScreen() {
           <Text style={s.zone}>{zoneName}</Text>
           <SymbolView name="chevron.down" size={13} tintColor={MUTED} />
         </Pressable>
-        <SymbolView name="person.circle" size={27} tintColor={MUTED} />
+        <Pressable onPress={() => router.push("/modal")}>
+          <SymbolView name="person.circle" size={27} tintColor={MUTED} />
+        </Pressable>
       </View>
       <FeedList />
     </SafeAreaView>

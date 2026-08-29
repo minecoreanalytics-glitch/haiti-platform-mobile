@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useFocusEffect } from "expo-router"
 import {
   ActivityIndicator,
   FlatList,
@@ -22,7 +23,7 @@ import {
   PAPER,
 } from "@/constants/theme"
 
-type FeedPost = {
+export type FeedPost = {
   id: string
   kind: "PWOJE" | "KANDIDA" | "SITWAYEN"
   body: string
@@ -67,7 +68,7 @@ function initials(name: string) {
     .toUpperCase()
 }
 
-function Card({ post }: { post: FeedPost }) {
+export function Card({ post }: { post: FeedPost }) {
   const isCandidate = post.kind !== "SITWAYEN"
   const pct = post.project
     ? Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))
@@ -170,6 +171,12 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
     load(filter)
     return subscribeZone(() => load(filter))
   }, [filter, load])
+
+  useFocusEffect(
+    useCallback(() => {
+      load(filter)
+    }, [filter, load])
+  )
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
