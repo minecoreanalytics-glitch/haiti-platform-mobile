@@ -7,6 +7,7 @@ import {
   Image,
   Pressable,
   RefreshControl,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -17,7 +18,16 @@ import { onFeedScroll } from "@/lib/navbar"
 import { getPseudonym } from "@/lib/identity"
 import { t, useLang, type StringKey } from "@/lib/i18n"
 import { StoriesRow } from "@/components/StoriesRow"
-import { API_URL, GREEN, L_BG, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
+import {
+  API_URL,
+  GREEN,
+  L_BG,
+  L_LINE,
+  L_SUB,
+  L_TXT,
+  PUBLIC_URL,
+  VERIFIED,
+} from "@/constants/theme"
 
 export type IssueCategory =
   | "DLO"
@@ -125,6 +135,23 @@ export function Card({ post }: { post: FeedPost }) {
     }
   }
 
+  // WhatsApp est le vrai réseau en Haïti : un signalement qui ne circule pas
+  // ne met aucune pression. Le partage n'est pas décoratif, c'est la diffusion.
+  const share = async () => {
+    const head = post.project
+      ? post.project.title
+      : `${t("shareIssueIntro")} · ${post.commune}`
+    const witnesses =
+      count > 0 ? `\n${count} ${t("shareWitnesses")}.` : ""
+    try {
+      await Share.share({
+        message: `${head}\n\n"${post.body}"${witnesses}\n${t("shareAsk")} :\n${PUBLIC_URL}/p/${post.id}`,
+      })
+    } catch {
+      // partage annulé
+    }
+  }
+
   const report = () => {
     Alert.alert(t("report"), undefined, [
       ...REPORT_REASONS.map((r) => ({
@@ -223,9 +250,13 @@ export function Card({ post }: { post: FeedPost }) {
           {count.toLocaleString("fr-FR")}{" "}
           {count > 1 ? t("witnesses") : t("witness1")}
         </Text>
-        <Pressable style={{ marginLeft: "auto", flexDirection: "row", alignItems: "center", gap: 5 }}>
+        <Pressable style={s.iconBtn}>
           <SymbolView name="bubble.right" size={18} tintColor={L_SUB} />
           <Text style={s.sub}>{post.commentCount}</Text>
+        </Pressable>
+        <Pressable style={[s.shareBtn, { marginLeft: "auto" }]} onPress={share}>
+          <SymbolView name="square.and.arrow.up" size={17} tintColor="#0B8A5C" />
+          <Text style={s.shareTxt}>{t("share")}</Text>
         </Pressable>
       </View>
 
@@ -437,6 +468,17 @@ const s = StyleSheet.create({
   },
   confirmTxt: { color: L_TXT, fontWeight: "700", fontSize: 13 },
   witnesses: { color: L_SUB, fontSize: 12 },
+  iconBtn: { flexDirection: "row", alignItems: "center", gap: 5 },
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#E7F6EF",
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+  shareTxt: { color: "#0B8A5C", fontWeight: "700", fontSize: 12 },
   project: {
     marginHorizontal: 14,
     marginTop: 12,

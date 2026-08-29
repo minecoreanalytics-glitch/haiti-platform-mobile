@@ -147,6 +147,19 @@ const STRINGS = {
   statusPRIS_AN_CHAJ: { fr: "Pris en charge", ht: "Pris an chaj" },
   statusREZOLI: { fr: "Résolu", ht: "Rezoli" },
 
+  // Partage
+  share: { fr: "Partager", ht: "Pataje" },
+  shareVia: { fr: "Partager sur WhatsApp", ht: "Pataje sou WhatsApp" },
+  shareIssueIntro: {
+    fr: "Signalement sur la Plateforme Civique Haïti",
+    ht: "Siyalman sou Platfòm Sivik Ayiti",
+  },
+  shareWitnesses: { fr: "témoins confirment", ht: "temwen konfime" },
+  shareAsk: {
+    fr: "Confirmez si vous constatez la même chose",
+    ht: "Konfime si w wè menm bagay la",
+  },
+
   // Modération
   report: { fr: "Signaler ce contenu", ht: "Siyale kontni sa a" },
   reportSent: { fr: "Signalement envoyé", ht: "Siyalman voye" },

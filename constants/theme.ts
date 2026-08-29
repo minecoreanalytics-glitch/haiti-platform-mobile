@@ -7,6 +7,8 @@ export const MUTED = "#8B98AE"
 export const FLAG_RED = "#E8283F"
 export const GREEN = "#10B981"
 export const API_URL = "http://localhost:3600"
+// URL publique des liens partagés. À remplacer par le domaine déployé.
+export const PUBLIC_URL = "http://localhost:3600"
 
 // Thème clair (IG) — le Fil et les écrans standards
 export const L_BG = "#FFFFFF"
