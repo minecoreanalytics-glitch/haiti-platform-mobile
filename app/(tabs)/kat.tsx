@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
-  Dimensions,
+  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,12 +14,12 @@ import { SymbolView } from "expo-symbols"
 import { GEO_COMMUNES, GEO_VIEWBOX } from "@/lib/haiti-geo"
 import {
   CHILD_RATIO,
-  DEMOGRAPHICS_SOURCE,
   DEPT_POPULATION,
   FEMALE_RATIO,
   VOTER_RATIO,
 } from "@/lib/haiti-demographics"
-import { setZone } from "@/lib/zone"
+import { getZone, setZone, subscribeZone } from "@/lib/zone"
+import { t, useLang } from "@/lib/i18n"
 import { API_URL, FLAG_RED, INK, LINE, MUTED, PAPER, SHEET } from "@/constants/theme"
 
 type DeptInfo = {
@@ -72,11 +72,20 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
 }
 
 export default function KatScreen() {
+  useLang()
   const router = useRouter()
   const [data, setData] = useState<MapData | null>(null)
   const [dept, setDept] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
+  const [box, setBox] = useState({ w: 0, h: 0 })
+  const [myZone, setMyZone] = useState(getZone())
+
+  const anim = useRef({
+    tx: new Animated.Value(0),
+    ty: new Animated.Value(0),
+    sc: new Animated.Value(1),
+  }).current
 
   useEffect(() => {
     fetch(`${API_URL}/api/map`)
@@ -84,6 +93,8 @@ export default function KatScreen() {
       .then(setData)
       .catch(() => setData(null))
   }, [])
+
+  useEffect(() => subscribeZone(() => setMyZone(getZone())), [])
 
   const byId = useMemo(
     () => new Map((data?.communes ?? []).map((c) => [c.id, c])),
@@ -99,19 +110,39 @@ export default function KatScreen() {
     : null
   const selectedDb = selectedId ? byId.get(selectedId) : null
 
-  const { transform, scale } = useMemo(() => {
-    if (!dept) return { transform: undefined, scale: 1 }
+  const zoom = useMemo(() => {
+    if (!dept) return { s: 1, dx: 0, dy: 0 }
     const boxes = GEO_COMMUNES.filter((g) => g.dept === dept).map((g) => g.b)
     const x0 = Math.min(...boxes.map((b) => b[0]))
     const y0 = Math.min(...boxes.map((b) => b[1]))
     const x1 = Math.max(...boxes.map((b) => b[2]))
     const y1 = Math.max(...boxes.map((b) => b[3]))
-    const sc = Math.min(VB_W / (x1 - x0), VB_H / (y1 - y0)) * 0.82
-    const tx = VB_W / 2 - ((x0 + x1) / 2) * sc
-    const ty = VB_H / 2 - ((y0 + y1) / 2) * sc
-    return { transform: `translate(${tx}, ${ty}) scale(${sc})`, scale: sc }
+    const sVb = Math.min(VB_W / (x1 - x0), VB_H / (y1 - y0)) * 0.82
+    return { s: sVb, dx: (x0 + x1) / 2, dy: (y0 + y1) / 2 }
   }, [dept])
 
+  useEffect(() => {
+    let tx = 0
+    let ty = 0
+    let sc = 1
+    if (dept && box.w > 0 && box.h > 0) {
+      const k = Math.min(box.w / VB_W, box.h / VB_H)
+      const ox = (box.w - VB_W * k) / 2
+      const oy = (box.h - VB_H * k) / 2
+      const Dx = ox + zoom.dx * k
+      const Dy = oy + zoom.dy * k
+      sc = zoom.s
+      tx = sc * (box.w / 2 - Dx)
+      ty = sc * (box.h / 2 - Dy)
+    }
+    Animated.parallel([
+      Animated.spring(anim.tx, { toValue: tx, useNativeDriver: true, friction: 9 }),
+      Animated.spring(anim.ty, { toValue: ty, useNativeDriver: true, friction: 9 }),
+      Animated.spring(anim.sc, { toValue: sc, useNativeDriver: true, friction: 9 }),
+    ]).start()
+  }, [dept, zoom, box, anim])
+
+  const scale = dept ? zoom.s : 1
   const colorOf = (d: string | null) => (d ? DEPT_COLORS[d] ?? FALLBACK : FALLBACK)
 
   const openDept = (d: string | null) => {
@@ -140,9 +171,11 @@ export default function KatScreen() {
       : data.national
     : null
   const pop = dept ? DEPT_POPULATION[dept] ?? NATIONAL_POP : NATIONAL_POP
-  const title = dept ?? "Ayiti"
+  const title = dept ?? (getLangTitle())
 
-  const W = Dimensions.get("window").width
+  function getLangTitle() {
+    return "Ayiti"
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
@@ -153,7 +186,13 @@ export default function KatScreen() {
             <Text style={{ color: MUTED, fontWeight: "600" }}>Ayiti</Text>
           </Pressable>
         ) : (
-          <Text style={s.title}>Ki kote w ye?</Text>
+          <Text style={s.title}>{t("whereAreYou")}</Text>
+        )}
+        {!dept && myZone && (
+          <Pressable style={s.resetChip} onPress={() => setZone(null)}>
+            <SymbolView name="xmark" size={10} tintColor={MUTED} />
+            <Text style={s.resetTxt}>{t("allHaiti")}</Text>
+          </Pressable>
         )}
       </View>
 
@@ -167,10 +206,7 @@ export default function KatScreen() {
           <Pressable
             key={d}
             onPress={() => openDept(dept === d ? null : d)}
-            style={[
-              s.chip,
-              dept === d && { backgroundColor: colorOf(d) },
-            ]}
+            style={[s.chip, dept === d && { backgroundColor: colorOf(d) }]}
           >
             <Text
               style={[s.chipTxt, dept === d && { color: INK, fontWeight: "800" }]}
@@ -181,59 +217,76 @@ export default function KatScreen() {
         ))}
       </ScrollView>
 
-      <View style={{ flex: 1 }}>
-        <Svg
-          width={W}
-          height="100%"
-          viewBox={GEO_VIEWBOX}
-          preserveAspectRatio="xMidYMid meet"
+      <View
+        style={{ flex: 1, overflow: "hidden" }}
+        onLayout={(e) => setBox({
+          w: e.nativeEvent.layout.width,
+          h: e.nativeEvent.layout.height,
+        })}
+      >
+        <Animated.View
+          style={{
+            flex: 1,
+            transform: [
+              { translateX: anim.tx },
+              { translateY: anim.ty },
+              { scale: anim.sc },
+            ],
+          }}
         >
-          <G transform={transform}>
-            {GEO_COMMUNES.map((g, i) => {
-              const dimmed = dept !== null && g.dept !== dept
-              const isSel = g.id !== null && g.id === selectedId
-              return (
-                <Path
-                  key={g.id ?? `x${i}`}
-                  d={g.d}
-                  fill={colorOf(g.dept)}
-                  fillOpacity={dimmed ? 0.05 : isSel ? 1 : 0.75}
-                  stroke={isSel ? PAPER : INK}
-                  strokeWidth={(isSel ? 1.4 : 0.7) / scale}
-                  onPress={() => onShape(g)}
-                />
-              )
-            })}
-            {GEO_COMMUNES.map((g) => {
-              const db = g.id ? byId.get(g.id) : null
-              if (!db || db.postCount === 0) return null
-              if (dept !== null && g.dept !== dept) return null
-              const r = 7 / scale
-              return (
-                <G key={`b-${g.id}`} onPress={() => onShape(g)}>
-                  <Circle
-                    cx={g.cx}
-                    cy={g.cy}
-                    r={r}
-                    fill={PAPER}
-                    stroke={INK}
-                    strokeWidth={1.2 / scale}
+          <Svg
+            width="100%"
+            height="100%"
+            viewBox={GEO_VIEWBOX}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <G>
+              {GEO_COMMUNES.map((g, i) => {
+                const dimmed = dept !== null && g.dept !== dept
+                const isSel = g.id !== null && g.id === selectedId
+                return (
+                  <Path
+                    key={g.id ?? `x${i}`}
+                    d={g.d}
+                    fill={colorOf(g.dept)}
+                    fillOpacity={dimmed ? 0.05 : isSel ? 1 : 0.75}
+                    stroke={isSel ? PAPER : INK}
+                    strokeWidth={(isSel ? 1.4 : 0.7) / scale}
+                    onPress={() => onShape(g)}
                   />
-                  <SvgText
-                    x={g.cx}
-                    y={g.cy + 3 / scale}
-                    textAnchor="middle"
-                    fill={INK}
-                    fontSize={9 / scale}
-                    fontWeight="800"
-                  >
-                    {String(db.postCount)}
-                  </SvgText>
-                </G>
-              )
-            })}
-          </G>
-        </Svg>
+                )
+              })}
+              {GEO_COMMUNES.map((g) => {
+                const db = g.id ? byId.get(g.id) : null
+                if (!db || db.postCount === 0) return null
+                if (dept !== null && g.dept !== dept) return null
+                const r = 7 / scale
+                return (
+                  <G key={`b-${g.id}`} onPress={() => onShape(g)}>
+                    <Circle
+                      cx={g.cx}
+                      cy={g.cy}
+                      r={r}
+                      fill={PAPER}
+                      stroke={INK}
+                      strokeWidth={1.2 / scale}
+                    />
+                    <SvgText
+                      x={g.cx}
+                      y={g.cy + 3 / scale}
+                      textAnchor="middle"
+                      fill={INK}
+                      fontSize={9 / scale}
+                      fontWeight="800"
+                    >
+                      {String(db.postCount)}
+                    </SvgText>
+                  </G>
+                )
+              })}
+            </G>
+          </Svg>
+        </Animated.View>
       </View>
 
       <View style={s.sheet}>
@@ -249,8 +302,10 @@ export default function KatScreen() {
                 <Text style={s.meta}>
                   {selectedGeo.dept} ·{" "}
                   {selectedDb && selectedDb.postCount > 0
-                    ? `${selectedDb.postCount} pòs`
-                    : "poko gen pòs"}
+                    ? `${selectedDb.postCount} ${
+                        selectedDb.postCount > 1 ? t("posts") : t("post1")
+                      }`
+                    : t("noPosts")}
                 </Text>
               </View>
               <Pressable onPress={() => setSelectedId(null)}>
@@ -258,7 +313,9 @@ export default function KatScreen() {
               </Pressable>
             </View>
             <Pressable style={s.cta} onPress={chooseZone}>
-              <Text style={s.ctaTxt}>Wè fil {selectedGeo.name}</Text>
+              <Text style={s.ctaTxt}>
+                {t("seeFeedOf")} {selectedGeo.name}
+              </Text>
             </Pressable>
           </View>
         ) : (
@@ -268,35 +325,37 @@ export default function KatScreen() {
                 <Text style={[s.sheetTitle, dept ? { color: colorOf(dept) } : null]}>
                   {title}
                 </Text>
-                <Text style={s.metaCaps}>{info ? `${info.communes} KOMIN` : ""}</Text>
+                <Text style={s.metaCaps}>
+                  {info ? `${info.communes} ${t("communes")}` : ""}
+                </Text>
               </View>
-              <Text style={s.meta}>{expanded ? "fèmen" : "plis"}</Text>
+              <Text style={s.meta}>{expanded ? t("close") : t("more")}</Text>
             </View>
             <View style={{ flexDirection: "row", gap: 18, marginTop: 8 }}>
               <Text style={s.keyNum}>
-                {fmt(pop)} <Text style={s.meta}>moun</Text>
+                {fmt(pop)} <Text style={s.meta}>{t("people")}</Text>
               </Text>
               <Text style={[s.keyNum, { color: FLAG_RED }]}>
-                {fmt(pop * VOTER_RATIO)} <Text style={s.meta}>votan</Text>
+                {fmt(pop * VOTER_RATIO)} <Text style={s.meta}>{t("voters")}</Text>
               </Text>
               <Text style={s.keyNum}>
-                {info?.posts ?? 0} <Text style={s.meta}>pòs</Text>
+                {info?.posts ?? 0} <Text style={s.meta}>{t("posts")}</Text>
               </Text>
             </View>
             {expanded && info && (
               <View style={{ marginTop: 16 }}>
                 <View style={s.grid}>
-                  <Stat label="FANM" value={fmt(pop * FEMALE_RATIO)} />
-                  <Stat label="GASON" value={fmt(pop * (1 - FEMALE_RATIO))} />
-                  <Stat label="TIMOUN -18" value={fmt(pop * CHILD_RATIO)} />
-                  <Stat label="KANDIDA" value={String(info.candidates)} />
-                  <Stat label="PWOJÈ" value={String(info.projects)} />
-                  <Stat label="KOMIN" value={String(info.communes)} />
+                  <Stat label={t("women")} value={fmt(pop * FEMALE_RATIO)} />
+                  <Stat label={t("men")} value={fmt(pop * (1 - FEMALE_RATIO))} />
+                  <Stat label={t("children")} value={fmt(pop * CHILD_RATIO)} />
+                  <Stat label={t("candidates")} value={String(info.candidates)} />
+                  <Stat label={t("projects")} value={String(info.projects)} />
+                  <Stat label={t("communes")} value={String(info.communes)} />
                 </View>
                 {info.topCommune && (
                   <View style={s.hlRow}>
                     <SymbolView name="flame.fill" size={15} tintColor="#FB923C" />
-                    <Text style={s.meta}>Komin ki pi aktif</Text>
+                    <Text style={s.meta}>{t("mostActive")}</Text>
                     <Text style={[s.hlVal, { marginLeft: "auto" }]}>
                       {info.topCommune}
                     </Text>
@@ -313,9 +372,7 @@ export default function KatScreen() {
                     </Text>
                   </View>
                 )}
-                <Text style={s.source}>
-                  {DEMOGRAPHICS_SOURCE} · rapò nasyonal aplike pa depatman
-                </Text>
+                <Text style={s.source}>{t("demoSource")}</Text>
               </View>
             )}
           </View>
@@ -326,9 +383,25 @@ export default function KatScreen() {
 }
 
 const s = StyleSheet.create({
-  head: { paddingHorizontal: 20, paddingTop: 8 },
+  head: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
   title: { color: PAPER, fontWeight: "800", fontSize: 20 },
   backBtn: { flexDirection: "row", alignItems: "center", gap: 5 },
+  resetChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#16213A",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  resetTxt: { color: MUTED, fontSize: 11, fontWeight: "600" },
   chips: { gap: 7, paddingHorizontal: 20, paddingVertical: 10 },
   chip: {
     paddingHorizontal: 12,

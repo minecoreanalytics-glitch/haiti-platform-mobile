@@ -1,6 +1,7 @@
 import { SymbolView } from "expo-symbols"
 import { Tabs } from "expo-router"
 import type { ColorValue } from "react-native"
+import { t, useLang } from "@/lib/i18n"
 import { INK, LINE, MUTED, PAPER } from "@/constants/theme"
 
 function icon(name: string) {
@@ -10,6 +11,7 @@ function icon(name: string) {
 }
 
 export default function TabLayout() {
+  useLang()
   return (
     <Tabs
       screenOptions={{
@@ -25,23 +27,23 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Fil", tabBarIcon: icon("house.fill") }}
+        options={{ title: t("tabFil"), tabBarIcon: icon("house.fill") }}
       />
       <Tabs.Screen
         name="kat"
-        options={{ title: "Kat", tabBarIcon: icon("map.fill") }}
+        options={{ title: t("tabKat"), tabBarIcon: icon("map.fill") }}
       />
       <Tabs.Screen
         name="poste"
-        options={{ title: "Poste", tabBarIcon: icon("plus.circle.fill") }}
+        options={{ title: t("tabPoste"), tabBarIcon: icon("plus.circle.fill") }}
       />
       <Tabs.Screen
         name="kandida"
-        options={{ title: "Kandida", tabBarIcon: icon("person.2.fill") }}
+        options={{ title: t("tabKandida"), tabBarIcon: icon("person.2.fill") }}
       />
       <Tabs.Screen
         name="pwoje"
-        options={{ title: "Pwojè", tabBarIcon: icon("banknote.fill") }}
+        options={{ title: t("tabPwoje"), tabBarIcon: icon("banknote.fill") }}
       />
     </Tabs>
   )

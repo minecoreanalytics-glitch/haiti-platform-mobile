@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { SymbolView } from "expo-symbols"
+import { t, useLang } from "@/lib/i18n"
 import { API_URL, CARD, INK, LINE, MUTED, PAPER } from "@/constants/theme"
 
 type Kandida = {
@@ -33,6 +34,7 @@ function initials(name: string) {
 }
 
 export default function KandidaScreen() {
+  useLang()
   const router = useRouter()
   const [list, setList] = useState<Kandida[] | null>(null)
 
@@ -48,8 +50,8 @@ export default function KandidaScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: INK }} edges={["top"]}>
       <View style={s.head}>
-        <Text style={s.title}>Kandida</Text>
-        <Text style={s.sub}>Kandida verifye pou eleksyon 2026 yo</Text>
+        <Text style={s.title}>{t("candidatesTitle")}</Text>
+        <Text style={s.sub}>{t("candidatesSub")}</Text>
       </View>
       {list === null ? (
         <ActivityIndicator color={PAPER} style={{ marginTop: 60 }} />
@@ -60,13 +62,13 @@ export default function KandidaScreen() {
           contentContainerStyle={{ padding: 16, gap: 10 }}
           ListEmptyComponent={
             <Text style={[s.sub, { textAlign: "center", marginTop: 40 }]}>
-              Poko gen kandida verifye.
+              {t("noCandidates")}
             </Text>
           }
           renderItem={({ item }) => (
             <Pressable
               style={s.card}
-              onPress={() => router.push(`/kandida/${item.id}`)}
+              onPress={() => router.push(`/kandidat/${item.id}`)}
             >
               <View style={s.avatar}>
                 <Text style={s.avatarTxt}>{initials(item.name)}</Text>
@@ -87,8 +89,8 @@ export default function KandidaScreen() {
                   {item.office}
                 </Text>
                 <Text style={s.meta2} numberOfLines={1}>
-                  {item.commune}, {item.department} · {item.posts} pòs ·{" "}
-                  {item.projects} pwojè
+                  {item.commune}, {item.department} · {item.posts} {t("posts")} ·{" "}
+                  {item.projects} {t("chipProjects").toLowerCase()}
                 </Text>
               </View>
               <SymbolView name="chevron.right" size={14} tintColor={MUTED} />

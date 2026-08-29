@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Stack, useLocalSearchParams, useRouter } from "expo-router"
 import { SymbolView } from "expo-symbols"
 import { Card, type FeedPost } from "@/components/FeedList"
+import { t, useLang } from "@/lib/i18n"
 import { API_URL, CARD, FLAG_RED, INK, LINE, MUTED, PAPER } from "@/constants/theme"
 
 type Detail = {
@@ -36,6 +37,7 @@ function initials(name: string) {
 }
 
 export default function KandidaDetail() {
+  useLang()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const [d, setD] = useState<Detail | null>(null)
@@ -54,7 +56,7 @@ export default function KandidaDetail() {
         <Pressable onPress={() => router.back()} style={s.back}>
           <SymbolView name="chevron.left" size={17} tintColor={PAPER} />
         </Pressable>
-        <Text style={s.navTitle}>Pwofil kandida</Text>
+        <Text style={s.navTitle}>{t("candidateProfile")}</Text>
         <View style={{ width: 32 }} />
       </View>
 
@@ -86,29 +88,29 @@ export default function KandidaDetail() {
               <View style={s.statsRow}>
                 <View style={s.stat}>
                   <Text style={s.statVal}>{d.posts.length}</Text>
-                  <Text style={s.statLbl}>Pòs</Text>
+                  <Text style={s.statLbl}>{t("posts")}</Text>
                 </View>
                 <View style={s.stat}>
                   <Text style={s.statVal}>
                     {d.posts.filter((p) => p.kind === "PWOJE").length}
                   </Text>
-                  <Text style={s.statLbl}>Pwojè</Text>
+                  <Text style={s.statLbl}>{t("chipProjects")}</Text>
                 </View>
                 <View style={s.stat}>
                   <Text style={[s.statVal, { color: "#4C9AFF" }]}>✓</Text>
-                  <Text style={s.statLbl}>Verifye</Text>
+                  <Text style={s.statLbl}>{t("verified")}</Text>
                 </View>
               </View>
 
               {d.programSummary && (
                 <View style={s.bio}>
-                  <Text style={s.bioTitle}>Pwogram</Text>
+                  <Text style={s.bioTitle}>{t("program")}</Text>
                   <Text style={s.bioTxt}>{d.programSummary}</Text>
                 </View>
               )}
               {d.topPriorities.length > 0 && (
                 <View style={s.bio}>
-                  <Text style={s.bioTitle}>Priyorite</Text>
+                  <Text style={s.bioTitle}>{t("priorities")}</Text>
                   {d.topPriorities.map((p) => (
                     <Text key={p} style={s.bioTxt}>
                       · {p}
@@ -118,14 +120,14 @@ export default function KandidaDetail() {
               )}
               <Pressable style={s.ask}>
                 <SymbolView name="questionmark.bubble" size={17} tintColor={PAPER} />
-                <Text style={s.askTxt}>Poze yon kesyon piblik</Text>
+                <Text style={s.askTxt}>{t("askPublicQuestion")}</Text>
               </Pressable>
-              <Text style={s.sectionTitle}>Aktivite</Text>
+              <Text style={s.sectionTitle}>{t("activity")}</Text>
             </View>
           }
           ListEmptyComponent={
             <Text style={[s.meta, { textAlign: "center", marginTop: 20 }]}>
-              Poko gen pòs.
+              {t("emptyFeed")}
             </Text>
           }
         />

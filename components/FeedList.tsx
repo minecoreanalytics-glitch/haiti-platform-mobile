@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { useFocusEffect } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
 import {
   ActivityIndicator,
   FlatList,
@@ -12,10 +12,10 @@ import {
 } from "react-native"
 import { SymbolView } from "expo-symbols"
 import { getZone, subscribeZone } from "@/lib/zone"
+import { t, useLang } from "@/lib/i18n"
 import {
   API_URL,
   CARD,
-  FLAG_RED,
   GREEN,
   INK,
   LINE,
@@ -32,6 +32,7 @@ export type FeedPost = {
   createdAt: string
   author: string
   party: string | null
+  candidateId?: string | null
   commune: string
   department: string
   images: string[]
@@ -43,18 +44,11 @@ export type FeedPost = {
   } | null
 }
 
-const FILTERS = [
-  { key: "tout", label: "Tout" },
-  { key: "pwoje", label: "Pwojè" },
-  { key: "kandida", label: "Kandida" },
-  { key: "sitwayen", label: "Sitwayen" },
-]
-
 function timeAgo(iso: string) {
   const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600_000)
-  if (h < 1) return "kounye a"
-  if (h < 24) return `${h} èdtan`
-  return `${Math.floor(h / 24)} jou`
+  if (h < 1) return t("now")
+  if (h < 24) return `${h}${t("hoursShort")}`
+  return `${Math.floor(h / 24)}${t("daysShort")}`
 }
 
 const htg = (n: number) => n.toLocaleString("fr-FR")
@@ -69,13 +63,21 @@ function initials(name: string) {
 }
 
 export function Card({ post }: { post: FeedPost }) {
+  const router = useRouter()
   const isCandidate = post.kind !== "SITWAYEN"
   const pct = post.project
     ? Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))
     : 0
+  const openProfile = () => {
+    if (post.candidateId) router.push(`/kandidat/${post.candidateId}`)
+  }
   return (
     <View style={s.card}>
-      <View style={s.row}>
+      <Pressable
+        style={s.row}
+        onPress={openProfile}
+        disabled={!post.candidateId}
+      >
         <View style={[s.avatar, { backgroundColor: isCandidate ? "#233457" : "#1B2438" }]}>
           <Text style={s.avatarTxt}>{initials(post.author)}</Text>
         </View>
@@ -95,10 +97,10 @@ export function Card({ post }: { post: FeedPost }) {
         </View>
         {post.kind === "PWOJE" && (
           <View style={s.badgeGreen}>
-            <Text style={s.badgeGreenTxt}>Pwojè</Text>
+            <Text style={s.badgeGreenTxt}>{t("badgeProject")}</Text>
           </View>
         )}
-      </View>
+      </Pressable>
 
       <Text style={s.body}>{post.body}</Text>
 
@@ -119,10 +121,12 @@ export function Card({ post }: { post: FeedPost }) {
               </Text>{" "}
               / {htg(post.project.goalHTG)} · {pct}%
             </Text>
-            <Text style={s.meta}>{post.project.contributions} kontribisyon</Text>
+            <Text style={s.meta}>
+              {post.project.contributions} {t("contributions")}
+            </Text>
           </View>
           <Pressable style={s.moncash}>
-            <Text style={s.moncashTxt}>Bay ak MonCash</Text>
+            <Text style={s.moncashTxt}>{t("give")}</Text>
           </Pressable>
         </View>
       )}
@@ -146,10 +150,18 @@ export function Card({ post }: { post: FeedPost }) {
 }
 
 export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
+  useLang()
   const [filter, setFilter] = useState(fixedFilter ?? "tout")
   const [posts, setPosts] = useState<FeedPost[] | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const FILTERS = [
+    { key: "tout", label: t("chipAll") },
+    { key: "pwoje", label: t("chipProjects") },
+    { key: "kandida", label: t("chipCandidates") },
+    { key: "sitwayen", label: t("chipCitizens") },
+  ]
 
   const load = useCallback(async (f: string) => {
     try {
@@ -162,7 +174,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
       const res = await fetch(`${API_URL}/api/feed${qs ? `?${qs}` : ""}`)
       setPosts(await res.json())
     } catch {
-      setError("Sèvè a pa reponn. Tcheke koneksyon an.")
+      setError(t("serverError"))
       setPosts([])
     }
   }, [])
@@ -213,7 +225,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
           }
           ListEmptyComponent={
             <Text style={[s.meta, { textAlign: "center", marginTop: 60 }]}>
-              {error ?? "Poko gen anyen la a."}
+              {error ?? t("emptyFeed")}
             </Text>
           }
           contentContainerStyle={{ paddingBottom: 24 }}
@@ -254,7 +266,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   avatarTxt: { color: "#9DB4E8", fontWeight: "700", fontSize: 13 },
-  author: { color: PAPER, fontWeight: "700", fontSize: 14 },
+  author: { color: PAPER, fontWeight: "700", fontSize: 14, flexShrink: 1 },
   meta: { color: MUTED, fontSize: 12 },
   badgeGreen: {
     backgroundColor: "#0D2B22",

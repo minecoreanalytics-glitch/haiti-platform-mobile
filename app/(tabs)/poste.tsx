@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { SymbolView } from "expo-symbols"
 import { getZone } from "@/lib/zone"
+import { t, useLang } from "@/lib/i18n"
 import {
   API_URL,
   CARD,
@@ -24,11 +25,12 @@ import {
 } from "@/constants/theme"
 
 const TYPES = [
-  { key: "kesyon", label: "Kesyon", icon: "questionmark.bubble.fill", hint: "Poze kandida yo yon kesyon piblik" },
-  { key: "pwoblem", label: "Pwoblèm", icon: "exclamationmark.triangle.fill", hint: "Siyale yon pwoblèm nan zòn ou (wout, dlo, fatra…)" },
+  { key: "kesyon", labelKey: "question", icon: "questionmark.bubble.fill", hintKey: "questionHint" },
+  { key: "pwoblem", labelKey: "problem", icon: "exclamationmark.triangle.fill", hintKey: "problemHint" },
 ] as const
 
 export default function PosteScreen() {
+  useLang()
   const router = useRouter()
   const [type, setType] = useState<"kesyon" | "pwoblem">("kesyon")
   const [name, setName] = useState("")
@@ -39,7 +41,7 @@ export default function PosteScreen() {
 
   const submit = async () => {
     if (body.trim().length < 10) {
-      setError("Ekri omwen 10 karaktè.")
+      setError(t("minChars"))
       return
     }
     setSending(true)
@@ -61,7 +63,7 @@ export default function PosteScreen() {
       setBody("")
       router.push("/")
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erè koneksyon")
+      setError(e instanceof Error ? e.message : t("connError"))
     } finally {
       setSending(false)
     }
@@ -74,35 +76,35 @@ export default function PosteScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={s.head}>
-          <Text style={s.title}>Poste</Text>
+          <Text style={s.title}>{t("postTitle")}</Text>
           <Text style={s.sub}>
-            {zone ? `Zòn ou: ${zone.name}` : "Zòn: Pòtoprens (chwazi zòn ou nan Kat)"}
+            {zone ? `${t("yourZone")}: ${zone.name}` : t("zoneDefault")}
           </Text>
         </View>
 
         <View style={s.types}>
-          {TYPES.map((t) => (
+          {TYPES.map((ty) => (
             <Pressable
-              key={t.key}
-              onPress={() => setType(t.key)}
-              style={[s.type, type === t.key && s.typeActive]}
+              key={ty.key}
+              onPress={() => setType(ty.key)}
+              style={[s.type, type === ty.key && s.typeActive]}
             >
               <SymbolView
-                name={t.icon as never}
+                name={ty.icon as never}
                 size={20}
-                tintColor={type === t.key ? PAPER : MUTED}
+                tintColor={type === ty.key ? PAPER : MUTED}
               />
-              <Text style={[s.typeTxt, type === t.key && { color: PAPER }]}>
-                {t.label}
+              <Text style={[s.typeTxt, type === ty.key && { color: PAPER }]}>
+                {t(ty.labelKey)}
               </Text>
             </Pressable>
           ))}
         </View>
-        <Text style={s.hint}>{TYPES.find((t) => t.key === type)?.hint}</Text>
+        <Text style={s.hint}>{t(TYPES.find((ty) => ty.key === type)!.hintKey)}</Text>
 
         <TextInput
           style={s.name}
-          placeholder="Non ou (opsyonèl)"
+          placeholder={t("yourNameOptional")}
           placeholderTextColor="#55627A"
           value={name}
           onChangeText={setName}
@@ -111,9 +113,7 @@ export default function PosteScreen() {
         <TextInput
           style={s.input}
           placeholder={
-            type === "kesyon"
-              ? "Ki kesyon w vle poze kandida yo?"
-              : "Dekri pwoblèm nan…"
+            type === "kesyon" ? t("questionPlaceholder") : t("problemPlaceholder")
           }
           placeholderTextColor="#55627A"
           value={body}
@@ -136,11 +136,11 @@ export default function PosteScreen() {
             {sending ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={s.sendTxt}>Pibliye</Text>
+              <Text style={s.sendTxt}>{t("publish")}</Text>
             )}
           </Pressable>
           <Text style={s.note}>
-            Sèl kandida verifye ka kreye pwojè, sou platfòm wèb la.
+            {t("onlyCandidatesNote")}
           </Text>
         </View>
       </KeyboardAvoidingView>
