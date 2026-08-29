@@ -14,6 +14,7 @@ import { useFocusEffect, useRouter } from "expo-router"
 import { SymbolView } from "expo-symbols"
 import type { FeedPost } from "@/components/FeedList"
 import { t, useLang } from "@/lib/i18n"
+import { onFeedScroll } from "@/lib/navbar"
 import { API_URL, CARD, GREEN, INK, LINE, MUTED, PAPER } from "@/constants/theme"
 
 const htg = (n: number) => n.toLocaleString("fr-FR")
@@ -111,7 +112,9 @@ export default function PwojeScreen() {
           data={posts}
           keyExtractor={(p) => p.id}
           renderItem={({ item }) => <ProjectCard post={item} />}
-          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 32 }}
+          onScroll={(e) => onFeedScroll(e.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}
           ListEmptyComponent={
             <Text style={[s.meta, { textAlign: "center", marginTop: 40 }]}>
               {t("noProjects")}

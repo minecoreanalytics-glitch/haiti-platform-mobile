@@ -1,49 +1,24 @@
-import { SymbolView } from "expo-symbols"
 import { Tabs } from "expo-router"
-import type { ColorValue } from "react-native"
-import { t, useLang } from "@/lib/i18n"
-
-function icon(name: string) {
-  return ({ color }: { color: ColorValue }) => (
-    <SymbolView name={name as never} tintColor={color as string} size={24} />
-  )
-}
+import { useLang } from "@/lib/i18n"
+import { FloatingTabBar } from "@/components/FloatingTabBar"
 
 export default function TabLayout() {
   useLang()
   return (
     <Tabs
+      tabBar={(props) => (
+        <FloatingTabBar state={props.state} navigation={props.navigation} />
+      )}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#111418",
-        tabBarInactiveTintColor: "#8E8E8E",
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#DBDBDB",
-        },
         sceneStyle: { backgroundColor: "#FFFFFF" },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{ title: t("tabFil"), tabBarIcon: icon("house.fill") }}
-      />
-      <Tabs.Screen
-        name="kat"
-        options={{ title: t("tabKat"), tabBarIcon: icon("map.fill") }}
-      />
-      <Tabs.Screen
-        name="poste"
-        options={{ title: t("tabPoste"), tabBarIcon: icon("plus.circle.fill") }}
-      />
-      <Tabs.Screen
-        name="kandida"
-        options={{ title: t("tabKandida"), tabBarIcon: icon("person.2.fill") }}
-      />
-      <Tabs.Screen
-        name="pwoje"
-        options={{ title: t("tabPwoje"), tabBarIcon: icon("banknote.fill") }}
-      />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="kat" />
+      <Tabs.Screen name="poste" />
+      <Tabs.Screen name="kandida" />
+      <Tabs.Screen name="pwoje" />
     </Tabs>
   )
 }

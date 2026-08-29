@@ -411,6 +411,7 @@ const s = StyleSheet.create({
   },
   chipTxt: { color: MUTED, fontSize: 12, fontWeight: "600" },
   sheet: {
+    paddingBottom: 64,
     backgroundColor: SHEET,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

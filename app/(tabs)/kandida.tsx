@@ -60,7 +60,7 @@ export default function KandidaScreen() {
         <FlatList
           data={list}
           keyExtractor={(k) => k.id}
-          contentContainerStyle={{ padding: 16, gap: 10 }}
+          contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}
           ListEmptyComponent={
             <Text style={[s.sub, { textAlign: "center", marginTop: 40 }]}>
               {t("noCandidates")}

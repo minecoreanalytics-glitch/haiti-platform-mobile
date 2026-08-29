@@ -12,6 +12,7 @@ import {
 } from "react-native"
 import { SymbolView } from "expo-symbols"
 import { getZone, subscribeZone } from "@/lib/zone"
+import { onFeedScroll } from "@/lib/navbar"
 import { t, useLang } from "@/lib/i18n"
 import { StoriesRow } from "@/components/StoriesRow"
 import {
@@ -238,6 +239,8 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
               </>
             ) : null
           }
+          onScroll={(e) => onFeedScroll(e.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={L_SUB} />
           }
@@ -246,7 +249,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
               {error ?? t("emptyFeed")}
             </Text>
           }
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={{ paddingBottom: 110 }}
         />
       )}
     </View>
