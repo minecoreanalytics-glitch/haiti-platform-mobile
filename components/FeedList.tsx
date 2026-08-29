@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useFocusEffect, useRouter } from "expo-router"
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -13,23 +14,44 @@ import {
 import { SymbolView } from "expo-symbols"
 import { getZone, subscribeZone } from "@/lib/zone"
 import { onFeedScroll } from "@/lib/navbar"
-import { t, useLang } from "@/lib/i18n"
+import { getPseudonym } from "@/lib/identity"
+import { t, useLang, type StringKey } from "@/lib/i18n"
 import { StoriesRow } from "@/components/StoriesRow"
-import {
-  API_URL,
-  GREEN,
-  L_BG,
-  L_LINE,
-  L_SUB,
-  L_TXT,
-  VERIFIED,
-} from "@/constants/theme"
+import { API_URL, GREEN, L_BG, L_LINE, L_SUB, L_TXT, VERIFIED } from "@/constants/theme"
+
+export type IssueCategory =
+  | "DLO"
+  | "WOUT"
+  | "KOURAN"
+  | "LEKOL"
+  | "SANTE"
+  | "FATRA"
+  | "SEKIRITE"
+  | "LOT"
+
+export const CATEGORIES: { key: IssueCategory; icon: string }[] = [
+  { key: "DLO", icon: "drop.fill" },
+  { key: "WOUT", icon: "road.lanes" },
+  { key: "KOURAN", icon: "bolt.fill" },
+  { key: "LEKOL", icon: "book.fill" },
+  { key: "SANTE", icon: "cross.case.fill" },
+  { key: "FATRA", icon: "trash.fill" },
+  { key: "SEKIRITE", icon: "shield.fill" },
+  { key: "LOT", icon: "ellipsis.circle.fill" },
+]
+
+export const catIcon = (c: IssueCategory) =>
+  CATEGORIES.find((x) => x.key === c)?.icon ?? "ellipsis.circle.fill"
+export const catLabel = (c: IssueCategory) => t(`cat${c}` as StringKey)
 
 export type FeedPost = {
   id: string
   kind: "PWOJE" | "KANDIDA" | "SITWAYEN"
+  action: "SIYALMAN" | "KESYON" | null
+  category: IssueCategory | null
+  issueStatus: "SIYALE" | "PRIS_AN_CHAJ" | "REZOLI" | null
   body: string
-  likeCount: number
+  confirmCount: number
   commentCount: number
   createdAt: string
   author: string
@@ -57,6 +79,7 @@ const htg = (n: number) => n.toLocaleString("fr-FR")
 
 function initials(name: string) {
   return name
+    .replace(/_/g, " ")
     .split(/\s+/)
     .slice(0, 2)
     .map((w) => w[0])
@@ -64,15 +87,61 @@ function initials(name: string) {
     .toUpperCase()
 }
 
+const REPORT_REASONS = [
+  "SPAM",
+  "FO_ENFO",
+  "AGRESYON",
+  "IDANTITE",
+  "LOT",
+] as const
+
 export function Card({ post }: { post: FeedPost }) {
   const router = useRouter()
+  const [confirmed, setConfirmed] = useState(false)
+  const [count, setCount] = useState(post.confirmCount)
   const isCandidate = post.kind !== "SITWAYEN"
-  const pct = post.project
-    ? Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))
-    : 0
+  const isIssue = post.action === "SIYALMAN"
+
   const openProfile = () => {
     if (post.candidateId) router.push(`/kandidat/${post.candidateId}`)
   }
+
+  const toggleConfirm = async () => {
+    const next = !confirmed
+    setConfirmed(next)
+    setCount((c) => c + (next ? 1 : -1))
+    try {
+      const res = await fetch(`${API_URL}/api/posts/${post.id}/confirm`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pseudonym: getPseudonym() }),
+      })
+      const j = await res.json()
+      setConfirmed(j.confirmed)
+      setCount(j.confirmCount)
+    } catch {
+      setConfirmed(!next)
+      setCount((c) => c + (next ? -1 : 1))
+    }
+  }
+
+  const report = () => {
+    Alert.alert(t("report"), undefined, [
+      ...REPORT_REASONS.map((r) => ({
+        text: t(`reason${r}` as StringKey),
+        onPress: async () => {
+          await fetch(`${API_URL}/api/reports`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ postId: post.id, reason: r }),
+          }).catch(() => null)
+          Alert.alert(t("reportSent"))
+        },
+      })),
+      { text: t("cancel"), style: "cancel" as const },
+    ])
+  }
+
   return (
     <View style={s.cell}>
       <Pressable style={s.header} onPress={openProfile} disabled={!post.candidateId}>
@@ -94,69 +163,94 @@ export function Card({ post }: { post: FeedPost }) {
           </View>
           <Text style={s.sub} numberOfLines={1}>
             {post.party ? `${post.party} · ` : ""}
-            {post.commune}
+            {post.commune} · {timeAgo(post.createdAt)}
           </Text>
         </View>
-        <SymbolView name="ellipsis" size={17} tintColor={L_TXT} />
+        <Pressable onPress={report} hitSlop={10}>
+          <SymbolView name="ellipsis" size={17} tintColor={L_TXT} />
+        </Pressable>
       </Pressable>
 
-      {post.images.length > 0 ? (
-        post.images.map((uri) => (
-          <Image key={uri} source={{ uri }} style={s.photo} />
-        ))
-      ) : (
-        <View style={s.textCanvas}>
-          <Text style={s.textCanvasTxt}>{post.body}</Text>
+      {post.category && (
+        <View style={s.catRow}>
+          <View style={s.catChip}>
+            <SymbolView name={catIcon(post.category) as never} size={12} tintColor="#374151" />
+            <Text style={s.catTxt}>{catLabel(post.category)}</Text>
+          </View>
+          {isIssue && post.issueStatus && (
+            <View
+              style={[
+                s.statusChip,
+                post.issueStatus === "REZOLI" && { backgroundColor: "#DCFCE7" },
+              ]}
+            >
+              <Text
+                style={[
+                  s.statusTxt,
+                  post.issueStatus === "REZOLI" && { color: "#166534" },
+                ]}
+              >
+                {t(`status${post.issueStatus}` as StringKey)}
+              </Text>
+            </View>
+          )}
         </View>
       )}
+
+      <Text style={s.body}>{post.body}</Text>
+
+      {post.images.map((uri) => (
+        <View key={uri}>
+          <Image source={{ uri }} style={s.photo} />
+          <View style={s.aiTag}>
+            <Text style={s.aiTagTxt}>{t("aiImage")}</Text>
+          </View>
+        </View>
+      ))}
 
       <View style={s.actions}>
-        <SymbolView name="heart" size={24} tintColor={L_TXT} />
-        <SymbolView name="bubble.right" size={22} tintColor={L_TXT} />
-        <SymbolView name="paperplane" size={22} tintColor={L_TXT} />
-        <View style={{ marginLeft: "auto" }}>
-          <SymbolView name="bookmark" size={22} tintColor={L_TXT} />
-        </View>
-      </View>
-
-      <Text style={s.likes}>
-        {post.likeCount.toLocaleString("fr-FR")} J&apos;aime
-      </Text>
-
-      {post.images.length > 0 && (
-        <Text style={s.caption}>
-          <Text style={s.captionAuthor}>{post.author.toLowerCase().replace(/\s+/g, "_")} </Text>
-          {post.body}
+        <Pressable style={s.confirmBtn} onPress={toggleConfirm}>
+          <SymbolView
+            name={confirmed ? "checkmark.seal.fill" : "checkmark.seal"}
+            size={19}
+            tintColor={confirmed ? "#0B8A5C" : L_TXT}
+          />
+          <Text style={[s.confirmTxt, confirmed && { color: "#0B8A5C" }]}>
+            {confirmed ? t("confirmed") : t("confirm")}
+          </Text>
+        </Pressable>
+        <Text style={s.witnesses}>
+          {count.toLocaleString("fr-FR")}{" "}
+          {count > 1 ? t("witnesses") : t("witness1")}
         </Text>
-      )}
+        <Pressable style={{ marginLeft: "auto", flexDirection: "row", alignItems: "center", gap: 5 }}>
+          <SymbolView name="bubble.right" size={18} tintColor={L_SUB} />
+          <Text style={s.sub}>{post.commentCount}</Text>
+        </Pressable>
+      </View>
 
       {post.project && (
         <View style={s.project}>
+          <Text style={s.projectTitle}>{post.project.title}</Text>
           <View style={s.track}>
-            <View style={[s.fill, { width: `${pct}%` }]} />
+            <View
+              style={[
+                s.fill,
+                {
+                  width: `${Math.min(100, Math.round((post.project.raisedHTG / post.project.goalHTG) * 100))}%`,
+                },
+              ]}
+            />
           </View>
-          <View style={s.projRow}>
-            <Text style={s.projNums} numberOfLines={1}>
-              <Text style={{ color: L_TXT, fontWeight: "700" }}>
-                {htg(post.project.raisedHTG)}
-              </Text>
-              <Text style={{ color: L_SUB }}> / {htg(post.project.goalHTG)} HTG</Text>
-              <Text style={{ color: "#0B8A5C", fontWeight: "700" }}> · {pct}%</Text>
-            </Text>
-            <Pressable style={s.givePill}>
-              <Text style={s.givePillTxt}>{t("give")}</Text>
-            </Pressable>
+          <Text style={s.projMeta}>
+            {t("declaredGoal")} : {htg(post.project.goalHTG)} HTG
+          </Text>
+          <View style={s.closedPill}>
+            <SymbolView name="lock.fill" size={11} tintColor="#8E8E8E" />
+            <Text style={s.closedTxt}>{t("fundingClosed")}</Text>
           </View>
         </View>
       )}
-
-      <Text style={s.comments}>
-        {post.commentCount > 0
-          ? `Voir les ${post.commentCount} commentaires`
-          : ""}
-        {"  "}
-        <Text style={{ color: "#A8A8A8" }}>{timeAgo(post.createdAt)}</Text>
-      </Text>
     </View>
   )
 }
@@ -228,9 +322,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
                       onPress={() => setFilter(f.key)}
                       style={[s.chip, filter === f.key && s.chipActive]}
                     >
-                      <Text
-                        style={[s.chipTxt, filter === f.key && s.chipTxtActive]}
-                      >
+                      <Text style={[s.chipTxt, filter === f.key && s.chipTxtActive]}>
                         {f.label}
                       </Text>
                     </Pressable>
@@ -257,12 +349,7 @@ export function FeedList({ fixedFilter }: { fixedFilter?: string }) {
 }
 
 const s = StyleSheet.create({
-  chips: {
-    flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
+  chips: { flexDirection: "row", gap: 8, paddingHorizontal: 14, paddingVertical: 10 },
   chip: {
     paddingHorizontal: 13,
     paddingVertical: 6,
@@ -272,13 +359,17 @@ const s = StyleSheet.create({
   chipActive: { backgroundColor: L_TXT },
   chipTxt: { color: L_TXT, fontSize: 13, fontWeight: "600" },
   chipTxtActive: { color: "#fff" },
-  cell: { paddingBottom: 14 },
+  cell: {
+    paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: L_LINE,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   avatar: {
     width: 34,
@@ -290,71 +381,91 @@ const s = StyleSheet.create({
   avatarTxt: { color: "#41537B", fontWeight: "800", fontSize: 12 },
   author: { color: L_TXT, fontWeight: "700", fontSize: 14, flexShrink: 1 },
   sub: { color: L_SUB, fontSize: 12 },
-  photo: { width: "100%", aspectRatio: 4 / 3, backgroundColor: "#F0F0F0" },
-  textCanvas: {
-    backgroundColor: "#10151D",
-    minHeight: 220,
+  catRow: { flexDirection: "row", gap: 6, paddingHorizontal: 14, marginBottom: 8 },
+  catChip: {
+    flexDirection: "row",
     alignItems: "center",
+    gap: 5,
+    backgroundColor: "#F1F3F5",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  catTxt: { color: "#374151", fontSize: 11, fontWeight: "700" },
+  statusChip: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     justifyContent: "center",
-    paddingHorizontal: 28,
-    paddingVertical: 36,
   },
-  textCanvasTxt: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "700",
-    lineHeight: 30,
-    textAlign: "center",
+  statusTxt: { color: "#92400E", fontSize: 11, fontWeight: "700" },
+  body: {
+    color: L_TXT,
+    fontSize: 15,
+    lineHeight: 21,
+    paddingHorizontal: 14,
+    marginBottom: 10,
   },
+  photo: { width: "100%", aspectRatio: 4 / 3, backgroundColor: "#F0F0F0" },
+  aiTag: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  aiTagTxt: { color: "#fff", fontSize: 9, fontWeight: "600" },
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 10,
     paddingHorizontal: 14,
     paddingTop: 11,
   },
-  likes: {
-    color: L_TXT,
-    fontWeight: "700",
-    fontSize: 13,
-    paddingHorizontal: 14,
-    marginTop: 8,
+  confirmBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: L_LINE,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
-  caption: {
-    color: L_TXT,
-    fontSize: 13,
-    lineHeight: 18,
-    paddingHorizontal: 14,
-    marginTop: 4,
+  confirmTxt: { color: L_TXT, fontWeight: "700", fontSize: 13 },
+  witnesses: { color: L_SUB, fontSize: 12 },
+  project: {
+    marginHorizontal: 14,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: L_LINE,
+    backgroundColor: "#FAFAFA",
   },
-  captionAuthor: { fontWeight: "700" },
-  project: { paddingHorizontal: 14, marginTop: 8 },
+  projectTitle: { color: L_TXT, fontWeight: "700", fontSize: 13 },
   track: {
     height: 4,
     borderRadius: 2,
     backgroundColor: "#EFEFEF",
     overflow: "hidden",
+    marginTop: 9,
   },
   fill: { height: "100%", backgroundColor: GREEN, borderRadius: 2 },
-  projRow: {
+  projMeta: { color: L_SUB, fontSize: 12, marginTop: 7 },
+  closedPill: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 7,
-    gap: 10,
+    gap: 5,
+    alignSelf: "flex-start",
+    backgroundColor: "#EFEFEF",
+    borderRadius: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    marginTop: 8,
   },
-  projNums: { fontSize: 13, flexShrink: 1 },
-  givePill: {
-    backgroundColor: GREEN,
-    borderRadius: 8,
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-  },
-  givePillTxt: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  comments: {
-    color: L_SUB,
-    fontSize: 13,
-    paddingHorizontal: 14,
-    marginTop: 4,
-  },
+  closedTxt: { color: "#6B7280", fontSize: 11, fontWeight: "600" },
 })

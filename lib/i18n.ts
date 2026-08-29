@@ -125,6 +125,59 @@ const STRINGS = {
   by: { fr: "par", ht: "pa" },
   noProjects: { fr: "Aucun projet pour le moment.", ht: "Poko gen pwojè." },
 
+  // Signalement / catégories
+  confirm: { fr: "Je confirme", ht: "Mwen konfime" },
+  confirmed: { fr: "Confirmé", ht: "Konfime" },
+  witnesses: { fr: "témoins", ht: "temwen" },
+  witness1: { fr: "témoin", ht: "temwen" },
+  catDLO: { fr: "Eau", ht: "Dlo" },
+  catWOUT: { fr: "Route", ht: "Wout" },
+  catKOURAN: { fr: "Électricité", ht: "Kouran" },
+  catLEKOL: { fr: "École", ht: "Lekòl" },
+  catSANTE: { fr: "Santé", ht: "Sante" },
+  catFATRA: { fr: "Déchets", ht: "Fatra" },
+  catSEKIRITE: { fr: "Sécurité", ht: "Sekirite" },
+  catLOT: { fr: "Autre", ht: "Lòt" },
+  pickCategory: { fr: "Choisir une catégorie", ht: "Chwazi yon kategori" },
+  categoryRequired: {
+    fr: "Choisissez une catégorie pour le signalement.",
+    ht: "Chwazi yon kategori pou siyalman an.",
+  },
+  statusSIYALE: { fr: "Signalé", ht: "Siyale" },
+  statusPRIS_AN_CHAJ: { fr: "Pris en charge", ht: "Pris an chaj" },
+  statusREZOLI: { fr: "Résolu", ht: "Rezoli" },
+
+  // Modération
+  report: { fr: "Signaler ce contenu", ht: "Siyale kontni sa a" },
+  reportSent: { fr: "Signalement envoyé", ht: "Siyalman voye" },
+  reasonSPAM: { fr: "Spam", ht: "Spam" },
+  reasonFO_ENFO: { fr: "Fausse information", ht: "Fo enfòmasyon" },
+  reasonAGRESYON: { fr: "Agression ou harcèlement", ht: "Agresyon oswa asèlman" },
+  reasonIDANTITE: { fr: "Usurpation d'identité", ht: "Fo idantite" },
+  reasonLOT: { fr: "Autre", ht: "Lòt" },
+  cancel: { fr: "Annuler", ht: "Anile" },
+
+  // Collecte pas ouverte
+  fundingClosed: {
+    fr: "Collecte pas encore ouverte",
+    ht: "Kolèkt la poko louvri",
+  },
+  declaredGoal: { fr: "objectif annoncé", ht: "objektif anonse" },
+
+  // Couverture des données
+  coverage: { fr: "contributeurs", ht: "kontribitè" },
+  lowCoverage: {
+    fr: "Peu de témoins ici — pas forcément peu de problèmes.",
+    ht: "Tikras temwen isit — sa pa vle di tikras pwoblèm.",
+  },
+
+  // Illustration
+  aiImage: { fr: "Image d'illustration", ht: "Imaj ilistrasyon" },
+
+  // Choix de langue au lancement
+  chooseLanguage: { fr: "Chwazi lang ou · Choisissez votre langue", ht: "Chwazi lang ou · Choisissez votre langue" },
+  continueBtn: { fr: "Continuer", ht: "Kontinye" },
+
   // Profil
   me: { fr: "Moi", ht: "Mwen" },
   visitor: { fr: "Visiteur", ht: "Vizitè" },

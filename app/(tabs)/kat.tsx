@@ -23,6 +23,7 @@ import { t, useLang } from "@/lib/i18n"
 import { API_URL, FLAG_RED, INK, LINE, MUTED, PAPER, SHEET } from "@/constants/theme"
 
 type DeptInfo = {
+  contributors: number
   communes: number
   candidates: number
   posts: number
@@ -350,8 +351,11 @@ export default function KatScreen() {
                   <Stat label={t("children")} value={fmt(pop * CHILD_RATIO)} />
                   <Stat label={t("candidates")} value={String(info.candidates)} />
                   <Stat label={t("projects")} value={String(info.projects)} />
-                  <Stat label={t("communes")} value={String(info.communes)} />
+                  <Stat label={t("coverage")} value={String(info.contributors)} />
                 </View>
+                {info.contributors < 10 && (
+                  <Text style={s.warn}>{t("lowCoverage")}</Text>
+                )}
                 {info.topCommune && (
                   <View style={s.hlRow}>
                     <SymbolView name="flame.fill" size={15} tintColor="#FB923C" />
@@ -411,7 +415,7 @@ const s = StyleSheet.create({
   },
   chipTxt: { color: MUTED, fontSize: 12, fontWeight: "600" },
   sheet: {
-    paddingBottom: 64,
+    paddingBottom: 96,
     backgroundColor: SHEET,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -449,6 +453,12 @@ const s = StyleSheet.create({
   },
   hlVal: { color: PAPER, fontSize: 12, fontWeight: "700", flexShrink: 1 },
   source: { color: "#55627A", fontSize: 10, marginTop: 12 },
+  warn: {
+    color: "#FBBF24",
+    fontSize: 11,
+    marginTop: 12,
+    lineHeight: 16,
+  },
   communeName: { color: PAPER, fontWeight: "800", fontSize: 18 },
   cta: {
     backgroundColor: FLAG_RED,
